@@ -7,7 +7,7 @@ import {
     UserOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, theme, Avatar } from 'antd';
+import {Layout, Menu, theme, Avatar } from 'antd';
 import { Link } from 'react-router-dom';
 
 const { Header, Content, Footer, Sider } = Layout;

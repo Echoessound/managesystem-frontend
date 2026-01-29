@@ -1,5 +1,5 @@
 import React from 'react';
-import { Breadcrumb, Layout, Menu, theme } from 'antd';
+import { Layout, Menu, theme } from 'antd';
 
 const { Header, Content, Footer } = Layout;
 
@@ -26,10 +26,7 @@ const PersonalProfile: React.FC = () => {
                 />
             </Header>
             <Content style={{ padding: '0 48px' }}>
-                <Breadcrumb
-                    style={{ margin: '16px 0' }}
-                    items={[{ title: 'Home' }, { title: 'List' }, { title: 'App' }]}
-                />
+                
                 <div
                     style={{
                         background: colorBgContainer,
