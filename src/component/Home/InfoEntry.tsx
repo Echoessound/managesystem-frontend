@@ -203,14 +203,14 @@ const InfoEntry: React.FC = () => {
         </Card>
         <Card title="营业执照上传" type="inner" style={{ marginBottom: 24 }}>
             <Form.Item
-                name="images"
+                name="license"
                 valuePropName="fileList"
                 getValueFromEvent={normFile}
                 extra="支持 jpg/png 格式"
             >
                 <Upload
                     listType="picture-card"
-                    name="logo"
+                    name="license"
                     maxCount={9}
                 >
                     <div>

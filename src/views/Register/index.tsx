@@ -1,5 +1,6 @@
-import React from 'react';
-import { Layout, Menu, theme, Button, Form, Input, Space, Select } from 'antd';
+import React, { useState } from 'react';
+import { Layout, theme, Button, Form, Input, Space, Select, message } from 'antd';
+import axios from 'axios';
 const { Header, Content, Footer } = Layout;
 const tailLayout = {
     wrapperCol: { offset: 0, span: 24 },
@@ -7,6 +8,51 @@ const tailLayout = {
 };
 
 const Register: React.FC = () => {
+    const [loadings, setLoadings] = useState<boolean[]>([]);
+  
+    const getCode = async () => {//获得验证码的功能
+        console.log('发送验证码请求');
+        try {
+            const { email } = await form.validateFields(['email']);
+            console.log(email);
+            axios.post('http://localhost:8080/api/auth/sendCode', { email })
+                .then(res => {
+                    console.log(res.data + '发送成功');
+                    if (res.data.code === 200) {
+                        console.log(res.data.message || '发送成功');
+                        message.success('验证码已发送，请注意查收');
+                    } else {
+                        console.log(res.data.message || '发送失败');
+                        message.error(res.data.message || '发送失败');
+                    }
+                })
+                .catch(() => {
+                    message.error('请求失败，请稍后重试');
+                    console.error('出现错误');
+                });
+        } catch (error) {
+            console.log('邮箱验证失败');
+        }
+    };
+
+  const enterLoading = (index: number) => {
+    console.log('Start loading:', index);
+
+    setLoadings((prevLoadings) => {
+      const newLoadings = [...prevLoadings];
+      newLoadings[index] = true;
+      return newLoadings;
+    });
+
+    setTimeout(() => {//验证码获取超时时间
+      setLoadings((prevLoadings) => {
+        const newLoadings = [...prevLoadings];
+        newLoadings[index] = false;
+        return newLoadings;
+      });
+    }, 6000);
+  };
+
     const {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
@@ -76,9 +122,13 @@ const Register: React.FC = () => {
                             <Input />
                         </Form.Item>
                         <Form.Item name="code" label="验证码" rules={[{ required: true, message: '请输入验证码' }]}>
-                            <Input style={{ width: '65%' }}  /><Button type="primary" style={{ width: '30%' ,padding: '20 10px',marginLeft: '5%'}} htmlType='button' onClick={() => {
-                                console.log('获得验证码');
-                            }}>获得验证码</Button></Form.Item>
+                            <Space style={{ width: '100%' }}>
+                                <Input style={{ width: '200px' }} />
+                                <Button type="primary" loading={loadings[0]} onClick={() =>{ console.log('加载验证码'); enterLoading(0);getCode();}}>
+                                   获取验证码
+                                </Button>
+                            </Space>
+                        </Form.Item>
                         <Form.Item name="role" label="角色" rules={[{ required: true, message: '请选择角色' }]}>
                             <Select>
                                 <Select.Option value="admin">管理员</Select.Option>
@@ -90,7 +140,31 @@ const Register: React.FC = () => {
                         </Form.Item>
                         <Form.Item {...tailLayout}>
                             <Space>
-                                <Button type="primary" htmlType="submit">
+                                <Button type="primary" htmlType="submit" onClick={async () => {
+                                    try {
+                                        const values = await form.validateFields();
+                                        if (!values.code) {
+                                            message.error('请输入验证码');
+                                            return;
+                                        }
+                                        console.log('注册信息:', values);
+                                        axios.post('http://localhost:8080/api/auth/register', values)
+                                            .then(res => {
+                                                console.log(res.data);
+                                                if (res.data.code === 200) {
+                                                    message.success('注册成功');
+                                                } else {
+                                                    message.error(res.data.message || '注册失败');
+                                                }
+                                            })
+                                            .catch(() => {
+                                                message.error('请求失败，请稍后重试');
+                                            });
+                                    } catch (error) {
+                                        const values = form.getFieldsValue(true);
+                                        console.log('表单验证失败，已填写的信息:', values);
+                                    }
+                                }}>
                                     注册账号
                                 </Button>
                                 <Button htmlType="button" onClick={onReset}>
@@ -104,7 +178,6 @@ const Register: React.FC = () => {
                 </div>
             </Content>
             <Footer style={{ textAlign: 'center' }}>
-                Ant Design ©{new Date().getFullYear()} Created by Ant UED
             </Footer>
         </Layout>
     );
