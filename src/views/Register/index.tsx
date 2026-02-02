@@ -14,15 +14,15 @@ const Register: React.FC = () => {
         console.log('发送验证码请求');
         try {
             const { email } = await form.validateFields(['email']);
-            console.log(email);
-            axios.post('http://localhost:8080/api/auth/sendCode', { email })
+            console.log(email);//打印邮箱(测试功能，后面可删除)
+            axios.post('http://localhost:8080/api/auth/sendCode', { email })//发送验证码的请求
                 .then(res => {
-                    console.log(res.data + '发送成功');
+                    console.log(res.data + '发送成功');//打印发送成功的信息(测试功能，后面可删除)
                     if (res.data.code === 200) {
-                        console.log(res.data.message || '发送成功');
+                        console.log(res.data.message || '发送成功');//打印发送成功的信息(测试功能，后面可删除)
                         message.success('验证码已发送，请注意查收');
                     } else {
-                        console.log(res.data.message || '发送失败');
+                        console.log(res.data.message || '发送失败');//打印发送失败的信息(测试功能，后面可删除)
                         message.error(res.data.message || '发送失败');
                     }
                 })
@@ -36,11 +36,11 @@ const Register: React.FC = () => {
     };
 
   const enterLoading = (index: number) => {
-    console.log('Start loading:', index);
+    console.log('Start loading:', index);//打印开始加载的信息(测试功能，后面可删除)
 
     setLoadings((prevLoadings) => {
-      const newLoadings = [...prevLoadings];
-      newLoadings[index] = true;
+      const newLoadings = [...prevLoadings];//创建新的加载状态
+      newLoadings[index] = true;//设置加载状态为true
       return newLoadings;
     });
 
@@ -50,7 +50,7 @@ const Register: React.FC = () => {
         newLoadings[index] = false;
         return newLoadings;
       });
-    }, 6000);
+    }, 6000);//验证码获取超时时间
   };
 
     const {
@@ -101,7 +101,7 @@ const Register: React.FC = () => {
                             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                         }}
                     >
-                        <Form.Item name="note" label="账号" rules={[{ required: true }]}>
+                        <Form.Item name="username" label="账号" rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
                         <Form.Item name="password" label="密码" rules={[{ required: true }]}>
@@ -141,9 +141,9 @@ const Register: React.FC = () => {
                         <Form.Item {...tailLayout}>
                             <Space>
                                 <Button type="primary" htmlType="submit" onClick={async () => {
-                                    try {
-                                        const values = await form.validateFields();
-                                        if (!values.code) {
+                                    try {//注册信息验证
+                                        const values = await form.validateFields();//获取注册信息
+                                        if (!values.code) {//验证码验证
                                             message.error('请输入验证码');
                                             return;
                                         }
@@ -153,8 +153,9 @@ const Register: React.FC = () => {
                                                 console.log(res.data);
                                                 if (res.data.code === 200) {
                                                     message.success('注册成功');
+                                                    window.location.href = '/login';//注册成功后跳转到登录界面
                                                 } else {
-                                                    message.error(res.data.message || '注册失败');
+                                                    message.error(res.data.message || '注册失败');//打印注册失败的信息(测试功能，后面可删除)
                                                 }
                                             })
                                             .catch(() => {

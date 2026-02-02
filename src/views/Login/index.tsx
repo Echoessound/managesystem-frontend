@@ -1,5 +1,6 @@
 import React from 'react';
-import { Layout, Menu, theme, Button, Form, Input, Space } from 'antd';
+import { Layout, Menu, theme, Button, Form, Input, Space,message } from 'antd';
+import axios from 'axios';
 const { Header, Content, Footer } = Layout;
 const tailLayout = {
     wrapperCol: { offset: 0, span: 24 },
@@ -56,7 +57,7 @@ const Login: React.FC = () => {
                             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                         }}
                     >
-                        <Form.Item name="note" label="账号" rules={[{ required: true }]}>
+                        <Form.Item name="username" label="账号" rules={[{ required: true }]}>
                             <Input />
                         </Form.Item>
                         <Form.Item name="password" label="密码" rules={[{ required: true }]}>
@@ -64,7 +65,34 @@ const Login: React.FC = () => {
                         </Form.Item>
                         <Form.Item {...tailLayout}>
                             <Space>
-                                <Button type="primary" htmlType="submit">
+                                <Button type="primary" htmlType="submit" onClick={async()=>{
+                                    try{
+                                        const values = await form.validateFields();
+                                        if (!values.username || !values.password) {
+                                            message.error('请输入账号和密码');
+                                            return;
+                                        }
+                                        console.log('登录信息:', values);
+                                        axios.post('http://localhost:8080/api/auth/login', values)
+                                            .then(res => {
+                                                console.log(res.data);
+                                                if (res.data.code === 200) {
+                                                    message.success('登录成功');
+                                                    window.location.href = '/';
+                                                } else {
+                                                    message.error(res.data.message || '登录失败');
+                                                }
+                                            })
+                                            .catch(() => {
+                                                message.error('请求失败，请稍后重试');
+                                            });
+                                    } catch (error) {
+                                        const values = form.getFieldsValue(true);
+                                        console.log('表单验证失败，已填写的信息:', values);
+                                    }
+                                    }
+                                }
+                                        >
                                     登录
                                 </Button>
                                 <Button htmlType="button" onClick={onReset}>
@@ -84,7 +112,6 @@ const Login: React.FC = () => {
                 </div>
             </Content>
             <Footer style={{ textAlign: 'center' }}>
-                Ant Design ©{new Date().getFullYear()} Created by Ant UED
             </Footer>
         </Layout>
     );
