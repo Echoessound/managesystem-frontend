@@ -40,7 +40,7 @@ const InfoEntry: React.FC = () => {
   };
 
   return (
-    <Card title="录入新酒店信息" bordered={false}>
+    <Card title="录入新酒店信息" variant="outlined">
       <Form
         form={form}
         name="hotel_entry_form"
@@ -164,7 +164,7 @@ const InfoEntry: React.FC = () => {
                 name="price"
                 tooltip="展示在前台列表页的参考价格，通常为最低价"
             >
-                <InputNumber min={0} addonAfter="元" style={{ width: '100%' }} />
+                <InputNumber min={0} suffix="元" style={{ width: '100%' }} />
             </Form.Item>
         </Card>
 
