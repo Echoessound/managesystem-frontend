@@ -78,6 +78,9 @@ const Login: React.FC = () => {
                                                 console.log(res.data);
                                                 if (res.data.code === 200) {
                                                     message.success('登录成功');
+                                                    // 保存用户信息到 localStorage
+                                                    localStorage.setItem('user', JSON.stringify(res.data.data.user));
+                                                    localStorage.setItem('token', res.data.data.token);
                                                     window.location.href = '/';
                                                 } else {
                                                     message.error(res.data.message || '登录失败');

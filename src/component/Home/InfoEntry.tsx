@@ -1,25 +1,107 @@
 import React, { useState } from 'react';
-import { Form, Input, Select, Upload, Button, Card, InputNumber, message, Space } from 'antd';
-import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
-
-const { Option } = Select;
-const { TextArea } = Input;
+import { Form, Button, Card, message, Upload, Space } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import axios from 'axios';
+import { HotelForm } from './HotelForm';
 
 const InfoEntry: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
 
-  // 模拟提交数据
+  // 提交数据到后端
   const onFinish = async (values: any) => {
     setLoading(true);
     try {
-        console.log('Success:', values);
-        // 假设这里会调用 API
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        message.success('酒店信息录入成功！');
-        form.resetFields();
-    } catch (error) {
-        message.error('录入失败，请重试。');
+        // 获取当前登录用户信息
+        const userStr = localStorage.getItem('user');
+        const token = localStorage.getItem('token');
+        let ownerId = '';
+        let ownerName = '';
+
+        if (userStr) {
+            try {
+                const userData = JSON.parse(userStr);
+                ownerId = userData.id;
+                ownerName = userData.username;
+            } catch (e) {
+                console.error('解析用户信息失败', e);
+            }
+        }
+
+        if (!ownerId) {
+             message.error('无法获取用户信息，请重新登录');
+             setLoading(false);
+             return;
+        }
+
+        // 使用 FormData 提交，包含文件
+        const formData = new FormData();
+
+        // 基础信息
+        formData.append('name', values.name);
+        formData.append('description', values.description || '');
+        formData.append('city', values.city);
+        formData.append('address', values.address || '');
+        formData.append('contactPhone', values.contactPhone || '');
+        formData.append('price', String(values.price || 0));
+        formData.append('ownerId', ownerId);
+        formData.append('ownerName', ownerName);
+
+        // 设施
+        if (values.amenities) {
+            values.amenities.forEach((item: string) => {
+                formData.append('amenities', item);
+            });
+        }
+
+        // 房型 (需要序列化或重复key)
+        if (values.roomTypes) {
+            values.roomTypes.forEach((rt: any, index: number) => {
+                formData.append(`roomTypes[${index}][name]`, rt.name);
+                formData.append(`roomTypes[${index}][price]`, String(rt.price));
+                formData.append(`roomTypes[${index}][capacity]`, String(rt.capacity));
+                formData.append(`roomTypes[${index}][count]`, String(rt.count));
+            });
+        }
+
+        // 图片文件
+        if (values.images) {
+            values.images.forEach((file: any) => {
+                if (file.originFileObj) {
+                    formData.append('images', file.originFileObj);
+                }
+            });
+        }
+
+        // 营业执照
+        if (values.license && values.license[0] && values.license[0].originFileObj) {
+            formData.append('license', values.license[0].originFileObj);
+        }
+
+        console.log('提交数据...');
+        console.log(formData,'formData');
+        // 调用后端API
+        const response = await axios.post('http://localhost:8080/api/hotel/create', formData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
+        if (response.data.code === 200) {
+            message.success('酒店信息录入成功！');
+            form.resetFields();
+        } else {
+            message.error(response.data.message || '录入失败');
+        }
+
+    } catch (error: any) {
+        console.error('录入失败:', error);
+        if (error.response && error.response.data && error.response.data.message) {
+            message.error(error.response.data.message);
+        } else {
+            message.error('录入失败，请重试。');
+        }
     } finally {
         setLoading(false);
     }
@@ -28,15 +110,6 @@ const InfoEntry: React.FC = () => {
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);
     message.error('请检查表单填写是否正确。');
-  };
-
-  // 图片上传处理
-  const normFile = (e: any) => {
-    console.log('Upload event:', e);
-    if (Array.isArray(e)) {
-      return e;
-    }
-    return e?.fileList;
   };
 
   return (
@@ -56,162 +129,25 @@ const InfoEntry: React.FC = () => {
             roomTypes: []
         }}
       >
-        <Card title="基础信息" type="inner" style={{ marginBottom: 24 }}>
-            <Form.Item
-                label="酒店名称"
-                name="name"
-                rules={[{ required: true, message: '请输入酒店名称' }, { min: 2, max: 50, message: '酒店名称长度应在2-50个字符之间' }]}
-            >
-                <Input placeholder="请输入酒店名称" />
-            </Form.Item>
+        <HotelForm />
 
-            <Form.Item
-                label="酒店描述"
-                name="description"
-                rules={[{ required: true, message: '请输入酒店描述' }]}
-            >
-                <TextArea rows={4} placeholder="请输入酒店描述" />
-            </Form.Item>
-
-            <Form.Item
-                label="所在城市"
-                name="city"
-                rules={[{ required: true, message: '请选择所在城市' }]}
-            >
-                <Select placeholder="请选择城市">
-                    {/* 这里为了演示方便，直接列出城市，实际可以使用导入的常量 */}
-                    {['北京', '上海', '广州', '深圳', '杭州', '成都', '武汉', '西安', '南京', '重庆', '苏州', '天津', '长沙', '青岛', '厦门'].map(city => (
-                        <Option key={city} value={city}>{city}</Option>
-                    ))}
-                </Select>
-            </Form.Item>
-
-            <Form.Item
-                label="详细地址"
-                name="address"
-                rules={[{ required: true, message: '请输入详细地址' }]}
-            >
-                <Input placeholder="请输入详细地址" />
-            </Form.Item>
-
-            <Form.Item
-                label="联系电话"
-                name="contactPhone"
-                rules={[{ required: true, message: '请输入联系电话' }]}
-            >
-                <Input placeholder="请输入联系电话" />
-            </Form.Item>
-        </Card>
-
-        <Card title="房型与价格" type="inner" style={{ marginBottom: 24 }}>
-            <Form.List name="roomTypes">
-                {(fields, { add, remove }) => (
-                    <>
-                        {fields.map(({ key, name, ...restField }) => (
-                            <div key={key} style={{ display: 'flex', marginBottom: 8, alignItems: 'flex-start' }}>
-                                <Form.Item
-                                    {...restField}
-                                    name={[name, 'name']}
-                                    rules={[{ required: true, message: '房型名称' }]}
-                                    style={{ marginBottom: 0, flex: 2, marginRight: 8, width: '50%' }}
-                                >
-                                    <Input placeholder="房型名称" />
-                                </Form.Item>
-                                <Form.Item
-                                    {...restField}
-                                    name={[name, 'price']}
-                                    rules={[{ required: true, message: '价格' }]}
-                                    style={{ marginBottom: 0, flex: 1, marginRight: 8 }}
-                                >
-                                    <InputNumber placeholder="价格" min={0} addonAfter="元" style={{ width: '100%' }} />
-                                </Form.Item>
-                                <Form.Item
-                                    {...restField}
-                                    name={[name, 'capacity']}
-                                    rules={[{ required: true, message: '容纳人数' }]}
-                                    style={{ marginBottom: 0, flex: 1, marginRight: 8 }}
-                                >
-                                    <InputNumber placeholder="容纳人数" min={1} addonAfter="人" style={{ width: '100%' }} />
-                                </Form.Item>
-                                <Form.Item
-                                    {...restField}
-                                    name={[name, 'count']}
-                                    rules={[{ required: true, message: '房间数量' }]}
-                                    style={{ marginBottom: 0, flex: 1, marginRight: 8 }}
-                                >
-                                    <InputNumber placeholder="数量" min={0} addonAfter="间" style={{ width: '100%' }} />
-                                </Form.Item>
-                                <Form.Item shouldUpdate noStyle>
-                                    {() => (
-                                        <Button type="link" danger onClick={() => remove(name)} style={{ height: 'auto', padding: '4px 0' }}>
-                                            删除
-                                        </Button>
-                                    )}
-                                </Form.Item>
-                            </div>
-                        ))}
-                        <Form.Item>
-                            <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                                添加房型
-                            </Button>
-                        </Form.Item>
-                   </>
-                )}
-            </Form.List>
-
-            <Form.Item
-                label="基础价格"
-                name="price"
-                tooltip="展示在前台列表页的参考价格，通常为最低价"
-            >
-                <InputNumber min={0} suffix="元" style={{ width: '100%' }} />
-            </Form.Item>
-        </Card>
-
-        <Card title="酒店设施" type="inner" style={{ marginBottom: 24 }}>
-             <Form.Item
-                name="amenities"
-                label="设施配置"
-                rules={[{ required: true, message: '请选择设施' }]}
-            >
-                <Select mode="tags" placeholder="选择或输入设施">
-                     {['WiFi', '游泳池', '健身房', '餐厅', '停车场', 'SPA', '江景', '早餐', '接机服务', '行李寄存', '24小时前台', '空调', '电视', '浴缸', '阳台', '电梯', '会议室', '商务中心', '儿童游乐场', '宠物友好'].map(item => (
-                        <Option key={item} value={item}>{item}</Option>
-                    ))}
-                </Select>
-            </Form.Item>
-        </Card>
-
-        <Card title="照片上传" type="inner" style={{ marginBottom: 24 }}>
-            <Form.Item
-                name="images"
-                valuePropName="fileList"
-                getValueFromEvent={normFile}
-                extra="支持 jpg/png 格式"
-            >
-                <Upload
-                    listType="picture-card"
-                    name="logo"
-                    maxCount={9}
-                >
-                    <div>
-                        <UploadOutlined />
-                        <div style={{ marginTop: 8 }}>上传图片</div>
-                    </div>
-                </Upload>
-            </Form.Item>
-        </Card>
-        <Card title="营业执照上传" type="inner" style={{ marginBottom: 24 }}>
+        <Card title="营业执照图片上传" type="inner" style={{ marginBottom: 24 }}>
             <Form.Item
                 name="license"
                 valuePropName="fileList"
-                getValueFromEvent={normFile}
+                getValueFromEvent={(e: any) => {
+                    if (Array.isArray(e)) return e;
+                    return e?.fileList;
+                }}
                 extra="支持 jpg/png 格式"
             >
                 <Upload
                     listType="picture-card"
                     name="license"
-                    maxCount={9}
+                    maxCount={1}
+                    accept="image/*"
+                    beforeUpload={() => false}
+                    onRemove={() => true}
                 >
                     <div>
                         <UploadOutlined />
@@ -220,6 +156,7 @@ const InfoEntry: React.FC = () => {
                 </Upload>
             </Form.Item>
         </Card>
+
         <Form.Item>
             <Space>
                 <Button type="primary" htmlType="submit" loading={loading}>

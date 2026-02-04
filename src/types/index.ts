@@ -128,6 +128,7 @@ export interface PaginationParams {
 
 /** 创建酒店请求 */
 export interface CreateHotelRequest {
+  ownerId: string;
   name: string;
   description: string;
   address: string;

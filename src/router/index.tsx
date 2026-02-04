@@ -5,6 +5,7 @@ import Home from "../views/Home";
 import Login from "../views/Login";
 import Register from "../views/Register";
 import PersonalProfile from "../views/PersonalProfile";
+import EditManage from "../component/Home/EditManage";
 //创建并暴露路由
 const router = createBrowserRouter([
     {
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
     {
         path: '/PersonalProfile',
         element: <PersonalProfile />,
+    },
+    {
+        path: '/edit/:id',
+        element: <EditManage />,
     }
 ])
 
