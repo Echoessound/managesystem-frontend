@@ -3,6 +3,10 @@ import { Form, Button, Card, message, Space } from 'antd';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { HotelForm } from './HotelForm';
+import { Layout} from 'antd';
+const {Header,Content} = Layout;
+
+
 
 const EditManage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -132,8 +136,11 @@ const EditManage: React.FC = () => {
   if (fetchLoading) {
       return <div style={{padding: 24}}>Loading...</div>;
   }
-
+ 
   return (
+    <Layout>
+        <Header style={{display: 'flex',alignItems: 'center'}}></Header>
+        <Content style={{padding: '0 48px'}}>
     <Card title="编辑酒店信息" variant="outlined">
       <Form
         form={form}
@@ -154,6 +161,8 @@ const EditManage: React.FC = () => {
         </Form.Item>
       </Form>
     </Card>
+    </Content>
+    </Layout>
   );
 };
 

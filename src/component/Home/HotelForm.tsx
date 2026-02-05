@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Select, Upload, Button, Card, InputNumber } from 'antd';
+import { Form, Input, Select, Upload, Button, Card, InputNumber,Layout} from 'antd';
 import { UploadOutlined, PlusOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
@@ -8,10 +8,12 @@ const { TextArea } = Input;
 interface HotelFormProps {
     isEdit?: boolean;
 }
-
+const {Content,Footer} = Layout;
 export const HotelForm: React.FC<HotelFormProps> = () => {
     return (
-        <>
+        <Layout>
+            
+            <Content style={{padding: '0 48px'}}>
             <Card title="基础信息" type="inner" style={{ marginBottom: 24 }}>
                 <Form.Item
                     label="酒店名称"
@@ -162,7 +164,11 @@ export const HotelForm: React.FC<HotelFormProps> = () => {
                     </Upload>
                 </Form.Item>
             </Card>
-        </>
+            </Content>
+            <Footer style={{ textAlign: 'center' }}>
+                
+            </Footer>
+        </Layout>
     );
 };
 

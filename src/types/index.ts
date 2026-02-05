@@ -128,19 +128,19 @@ export interface PaginationParams {
 
 /** 创建酒店请求 */
 export interface CreateHotelRequest {
-  ownerId: string;
-  name: string;
-  description: string;
-  address: string;
-  city: string;
-  price: number;
-  rating: number;
-  images: string[];
-  amenities: string[];
-  roomTypes: Omit<RoomType, 'id'>[];
-  contactPhone: string;
-  checkInTime: string;
-  checkOutTime: string;
+  ownerId: string;//酒店所有者id  
+  name: string;//酒店名称
+  description: string;//酒店描述
+  address: string;//酒店地址
+  city: string;//酒店城市
+  price: number;//酒店价格
+  rating: number;//酒店评分
+  images: string[];//酒店图片
+  amenities: string[];//酒店设施
+  roomTypes: Omit<RoomType, 'id'>[];//酒店房型
+  contactPhone: string;//酒店联系电话
+  checkInTime: string;//酒店入住时间
+  checkOutTime: string;//酒店退房时间
 }
 
 /** 更新酒店请求 */

@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import {
     DesktopOutlined,
     PieChartOutlined,
-    UserOutlined
+    UserOutlined,
+    EditOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import {Layout, Menu, theme, Avatar, Button } from 'antd';
@@ -31,8 +32,8 @@ function getItem(
 }
 
 const items: MenuItem[] = [
-    getItem('酒店信息编辑', '1', <PieChartOutlined />),
-    getItem('酒店信息查看', '2', <DesktopOutlined />),
+    getItem('酒店信息编辑', '1', <EditOutlined />),
+    getItem('酒店信息查看', '2', <PieChartOutlined />),
     getItem('酒店信息录入', '3', <UserOutlined /> )
 ];
 
