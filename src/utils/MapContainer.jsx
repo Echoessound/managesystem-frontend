@@ -9,9 +9,8 @@ import './MapContainer.css';
  * @property {number} [initialLat] - 初始纬度
  */
 
-// 高德 JS API Key（Web端，已配置安全密钥）
-const AMAP_JS_KEY = 'd4a40190ad0e21c36b11246dfa469200';
-const SECURITY_CODE = '4e63968c245ee015f30675fc39965e57';
+// 高德 JS API Key（Web端）
+const AMAP_JS_KEY = 'ec60beb00a8047166085fd4e9395b0fa';
 
 /**
  * @param {MapContainerProps} props
@@ -29,10 +28,10 @@ export default function MapContainer({
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    // 设置安全配置
-    window._AMapSecurityConfig = {
-      securityCode: SECURITY_CODE
-    };
+    // 设置安全配置（如果需要）
+    // window._AMapSecurityConfig = {
+    //   securityCode: 'your-security-code'
+    // };
 
     const initMap = async () => {
       try {

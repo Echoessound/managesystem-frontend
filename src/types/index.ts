@@ -47,8 +47,22 @@ export interface LoginResponse {
 /** 酒店审核状态 */
 export type HotelReviewStatus = 'pending' | 'approved' | 'rejected';
 
+/** 酒店审核状态中文映射 */
+export const HotelReviewStatusText: Record<HotelReviewStatus, string> = {
+    'pending': '待审核',
+    'approved': '审核通过',
+    'rejected': '审核不通过'
+};
+
+/** 酒店审核状态颜色映射 */
+export const HotelReviewStatusColor: Record<HotelReviewStatus, string> = {
+    'pending': 'orange',
+    'approved': 'green',
+    'rejected': 'red'
+};
+
 /** 酒店发布状态 */
-export type HotelPublishStatus = 'published' | 'unpublished';
+export type HotelPublishStatus = 'published' | 'unpublished';/*发布状态：已发布、未发布*/
 
 /** 酒店基础信息 */
 export interface Hotel {

@@ -141,10 +141,7 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
     const loadCitiesFromAmap = useCallback(async () => {
         setLoadingCities(true);
         
-        // 设置安全密钥
-        window._AMapSecurityConfig = {
-            securityCode: "4e63968c245ee015f30675fc39965e57"
-        };
+        
 
         // 尝试加载高德地图（用于地址搜索等功能）
         try {
@@ -228,30 +225,48 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
                 
                 try {
                     // 使用高德逆地理编码 API 获取城市
-                    const location = `${longitude},${latitude}`;
                     const apiKey = "ec60beb00a8047166085fd4e9395b0fa";
-                    const apiUrl = `https://restapi.amap.com/v3/geocode/regeo?key=${apiKey}&location=${location}&radius=1000&extensions=base`;
+                    const location = `${longitude},${latitude}`;
+                    const apiUrl = `https://restapi.amap.com/v3/geocode/regeo?location=${location}&key=${apiKey}`;
                     
                     console.log('调用高德逆地理编码 API...');
+                    
                     const response = await fetch(apiUrl);
+                    
+                    if (!response.ok) {
+                        console.error('API 响应错误:', response.status, response.statusText);
+                        throw new Error(`API 响应错误: ${response.status}`);
+                    }
+                    
                     const result = await response.json();
                     console.log('API 返回结果:', result);
+                    console.log('API 状态:', result.status, result.info);
                     
                     setLocating(false);
+                    
                     if (result.status === '1' && result.regeocode) {
                         const address = result.regeocode.addressComponent;
                         console.log('地址组件:', address);
-                        // city 可能是空数组，优先用 city，其次 district，最后 province
-                        const cityName = (Array.isArray(address.city) ? address.city[0] : address.city) 
-                                       || address.district 
-                                       || address.province;
-                        const cleanCityName = cityName?.replace(/(市|地区|县|盟|省)$/, '') || '未知';
+                        
+                        // city 可能是空字符串或数组，需要处理
+                        let cityRaw = address.city;
+                        if (Array.isArray(cityRaw)) {
+                            // 如果是数组，取第一个元素或使用 district/province
+                            cityRaw = cityRaw.length > 0 ? cityRaw[0] : (address.district || address.province || '');
+                        } else if (!cityRaw) {
+                            // 如果是空字符串，使用 district/province
+                            cityRaw = address.district || address.province || '';
+                        }
+                        
+                        const cityName = cityRaw || '未知';
+                        const cleanCityName = String(cityName).replace(/(市|地区|县|盟|省)$/, '') || '未知';
                         
                         setLocatedCity(cleanCityName);
                         message.success(`已定位到您的城市: ${cleanCityName}`);
                         scrollToCity(cleanCityName);
                     } else {
-                        message.warning('获取位置信息失败，请手动选择');
+                        console.warn('逆地理编码失败:', result.info);
+                        message.warning(`定位失败: ${result.info}`);
                     }
                 } catch (error) {
                     console.error('逆地理编码失败:', error);

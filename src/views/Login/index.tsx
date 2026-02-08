@@ -81,7 +81,16 @@ const Login: React.FC = () => {
                                                     // 保存用户信息到 localStorage
                                                     localStorage.setItem('user', JSON.stringify(res.data.data.user));
                                                     localStorage.setItem('token', res.data.data.token);
-                                                    window.location.href = '/';
+                                                    
+                                                    // 根据用户角色跳转到不同主页
+                                                    const userRole = res.data.data.user.role;
+                                                    if (userRole === 'admin') {
+                                                        window.location.href = '/admin-home';
+                                                    } else if (userRole === 'merchant') {
+                                                        window.location.href = '/';
+                                                    } else {
+                                                        window.location.href = '/';
+                                                    }
                                                 } else {
                                                     message.error(res.data.message || '登录失败');
                                                 }

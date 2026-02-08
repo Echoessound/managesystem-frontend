@@ -6,6 +6,7 @@ import Login from "../views/Login";
 import Register from "../views/Register";
 import PersonalProfile from "../views/PersonalProfile";
 import EditManage from "../component/Home/EditManage";
+import AdminHome from "../views/AdminHome";
 //创建并暴露路由
 const router = createBrowserRouter([
     {
@@ -27,7 +28,11 @@ const router = createBrowserRouter([
     {
         path: '/edit/:id',
         element: <EditManage />,
-    }
+    },
+    {
+        path: '/admin-home',
+        element: <AdminHome />,
+    },
 ])
 
 export default router//导出路由

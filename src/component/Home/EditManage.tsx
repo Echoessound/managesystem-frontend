@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Button, Card, message, Space } from 'antd';
+import { Form, Button, Card, message, Space, Tag } from 'antd';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { HotelForm } from './HotelForm';
-import { Layout} from 'antd';
-const {Header,Content} = Layout;
+import { Layout } from 'antd';
+import { HotelReviewStatusText, HotelReviewStatusColor } from '../../types';
+const { Header, Content } = Layout;
 
 
 
@@ -14,6 +15,7 @@ const EditManage: React.FC = () => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
+  const [hotelStatus, setHotelStatus] = useState<string>('');
 
   useEffect(() => {
     const fetchHotel = async () => {
@@ -26,6 +28,7 @@ const EditManage: React.FC = () => {
             
             if (response.data.code === 200) {
                 const hotel = response.data.data;
+                setHotelStatus(hotel.status);
                 
                 // 处理图片数据
                 const images = hotel.images && hotel.images.length > 0 
@@ -141,7 +144,19 @@ const EditManage: React.FC = () => {
     <Layout>
         <Header style={{display: 'flex',alignItems: 'center'}}></Header>
         <Content style={{padding: '0 48px'}}>
-    <Card title="编辑酒店信息" variant="outlined">
+    <Card
+        title={
+            <Space>
+                <span>编辑酒店信息</span>
+                {hotelStatus && (
+                    <Tag color={HotelReviewStatusColor[hotelStatus as keyof typeof HotelReviewStatusColor]}>
+                        {HotelReviewStatusText[hotelStatus as keyof typeof HotelReviewStatusText]}
+                    </Tag>
+                )}
+            </Space>
+        }
+        variant="outlined"
+    >
       <Form
         form={form}
         name="hotel_edit_form"

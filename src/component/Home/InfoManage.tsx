@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Tag, message, Popconfirm, Space } from 'antd';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { HotelReviewStatusText, HotelReviewStatusColor } from '../../types';
 
 const InfoManage: React.FC = () => {
     const [hotels, setHotels] = useState<any[]>([]);
@@ -86,11 +87,10 @@ const InfoManage: React.FC = () => {
             key: 'status',
             dataIndex: 'status',
             render: (status: string) => {
-                let color = status === 'approved' ? 'green' : 'geekblue';
-                if (status === 'rejected') color = 'volcano';
+                if (!status) return <Tag color="default">未知</Tag>;
                 return (
-                    <Tag color={color} key={status}>
-                        {status?.toUpperCase()}
+                    <Tag color={HotelReviewStatusColor[status as keyof typeof HotelReviewStatusColor]} key={status}>
+                        {HotelReviewStatusText[status as keyof typeof HotelReviewStatusText]}
                     </Tag>
                 );
             },
