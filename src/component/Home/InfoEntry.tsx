@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Button, Card, message, Upload, Space } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { Form, Button, Card, message, Space } from 'antd';
 import axios from 'axios';
 import { HotelForm } from './HotelForm';
 
@@ -129,33 +128,7 @@ const InfoEntry: React.FC = () => {
             roomTypes: []
         }}
       >
-        <HotelForm />
-
-        <Card title="营业执照图片上传" type="inner" style={{ marginBottom: 24 }}>
-            <Form.Item
-                name="license"
-                valuePropName="fileList"
-                getValueFromEvent={(e: any) => {
-                    if (Array.isArray(e)) return e;
-                    return e?.fileList;
-                }}
-                extra="支持 jpg/png 格式"
-            >
-                <Upload
-                    listType="picture-card"
-                    name="license"
-                    maxCount={1}
-                    accept="image/*"
-                    beforeUpload={() => false}
-                    onRemove={() => true}
-                >
-                    <div>
-                        <UploadOutlined />
-                        <div style={{ marginTop: 8 }}>上传图片</div>
-                    </div>
-                </Upload>
-            </Form.Item>
-        </Card>
+        <HotelForm form={form} />
 
         <Form.Item>
             <Space>

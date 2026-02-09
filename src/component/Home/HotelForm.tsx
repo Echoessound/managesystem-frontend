@@ -472,6 +472,33 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
                         </Upload>
                     </Form.Item>
                 </Card>
+
+                <Card title="营业执照上传" type="inner" style={{ marginBottom: 24 }}>
+                    <Form.Item
+                        name="license"
+                        valuePropName="fileList"
+                        getValueFromEvent={(e: any) => {
+                            if (Array.isArray(e)) return e;
+                            return e?.fileList;
+                        }}
+                        extra="支持 jpg/png 格式，请上传有效的营业执照"
+                        rules={[{ required: true, message: '请上传营业执照' }]}
+                    >
+                        <Upload
+                            listType="picture-card"
+                            name="license"
+                            maxCount={1}
+                            accept="image/*"
+                            beforeUpload={() => false}
+                            onRemove={() => true}
+                        >
+                            <div>
+                                <UploadOutlined />
+                                <div style={{ marginTop: 8 }}>上传营业执照</div>
+                            </div>
+                        </Upload>
+                    </Form.Item>
+                </Card>
             </Content>
 
             {/* 城市选择抽屉 */}

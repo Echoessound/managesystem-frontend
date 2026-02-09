@@ -7,7 +7,7 @@ import {
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import {Layout, Menu, theme, Avatar, Button } from 'antd';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import InfoManage from '../../component/Home/InfoManage';
 import EditManage from '../../component/Home/EditManage';
 import InfoEntry from '../../component/Home/InfoEntry';
@@ -37,6 +37,7 @@ const items: MenuItem[] = [
 ];
 
 const Home: React.FC = () => {
+    const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
     const [currentView, setCurrentView] = useState<string>('1');
     const [user, setUser] = useState<any>(null);
@@ -50,14 +51,18 @@ const Home: React.FC = () => {
             try {
                 const userData = JSON.parse(userStr);
                 setUser(userData);
-                // 验证角色，如果是商家应该进入商家页面
-                // 如果用户角色不是商家或者管理员，可以在这里做限制，或者跳转到普通用户页面
-                // 这里假设商家主页就是当前页面
+                // 验证角色，如果是管理员应该进入管理页面
+                if (userData.role === 'admin') {
+                    navigate('/admin-home');
+                }
             } catch (e) {
                 console.error('解析用户信息失败', e);
             }
+        } else {
+            // 如果没有登录，跳转到登录页
+            navigate('/login');
         }
-    }, []);
+    }, [navigate]);
 
     const handleLogout = () => {
         localStorage.removeItem('user');

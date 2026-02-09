@@ -41,6 +41,17 @@ const EditManage: React.FC = () => {
                       }))
                     : [];
 
+                // 处理营业执照数据
+                const license = hotel.license 
+                    ? [{
+                        uid: '-1',
+                        name: 'license.png',
+                        status: 'done',
+                        url: hotel.license.startsWith('http') ? hotel.license : `http://localhost:8080${hotel.license}`,
+                        originFileObj: undefined
+                      }]
+                    : [];
+
                 form.setFieldsValue({
                     name: hotel.name,
                     description: hotel.description,
@@ -50,7 +61,8 @@ const EditManage: React.FC = () => {
                     price: hotel.price,
                     amenities: hotel.amenities,
                     roomTypes: hotel.roomTypes,
-                    images: images
+                    images: images,
+                    license: license
                 });
             } else {
                 message.error('获取酒店信息失败');
@@ -110,6 +122,14 @@ const EditManage: React.FC = () => {
             }
         }
 
+        // 处理营业执照
+        if (values.license && values.license[0] && values.license[0].originFileObj) {
+            formData.append('license', values.license[0].originFileObj);
+        } else if (values.license && values.license[0] && values.license[0].url) {
+            // 保留原执照，直接传递 URL
+            formData.append('license', values.license[0].url.replace('http://localhost:8080', ''));
+        }
+
         const response = await axios.put(`http://localhost:8080/api/hotel/${id}`, formData, {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -163,7 +183,7 @@ const EditManage: React.FC = () => {
         onFinish={onFinish}
         layout="vertical"
       >
-        <HotelForm />
+        <HotelForm form={form} />
         <Form.Item>
             <Space>
                 <Button type="primary" htmlType="submit" loading={loading}>
