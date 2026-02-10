@@ -90,8 +90,9 @@ const Register: React.FC = () => {
                 >
                     <Form
                         form={form}
-                        name="control-hooks"
+                        name="register_form"
                         onFinish={onFinish}
+                        autoComplete="off"
                         style={{
                             minWidth: 400,
                             width: '60%',
@@ -102,10 +103,10 @@ const Register: React.FC = () => {
                         }}
                     >
                         <Form.Item name="username" label="账号" rules={[{ required: true }]}>
-                            <Input />
+                            <Input autoComplete="username" />
                         </Form.Item>
                         <Form.Item name="password" label="密码" rules={[{ required: true }]}>
-                            <Input.Password />
+                            <Input.Password autoComplete="new-password" />
                         </Form.Item>
                         <Form.Item name="confirmPassword" label="确认密码" rules={[{ required: true, message: '请确认密码' }, ({ getFieldValue }) => ({
                             message: '密码不一致',
@@ -116,14 +117,14 @@ const Register: React.FC = () => {
                                 return Promise.reject(new Error('密码不一致'));
                             }
                         })]}>
-                            <Input.Password />
+                            <Input.Password autoComplete="new-password" />
                         </Form.Item>
                         <Form.Item name="email" label="邮箱" rules={[{ required: true, message: '请输入邮箱' }, { type: 'email', message: '请输入正确的邮箱格式' }]}>
-                            <Input />
+                            <Input autoComplete="email" />
                         </Form.Item>
                         <Form.Item name="code" label="验证码" rules={[{ required: true, message: '请输入验证码' }]}>
                             <Space style={{ width: '100%' }}>
-                                <Input style={{ width: '200px' }} />
+                                <Input style={{ width: '200px' }} autoComplete="one-time-code" />
                                 <Button type="primary" loading={loadings[0]} onClick={() =>{ console.log('加载验证码'); enterLoading(0);getCode();}}>
                                    获取验证码
                                 </Button>
@@ -136,7 +137,7 @@ const Register: React.FC = () => {
                             </Select>
                         </Form.Item>
                         <Form.Item name="phone" label="电话" rules={[{ required: true, message: '请输入电话' }, { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的电话号码' }]}>
-                            <Input />
+                            <Input autoComplete="tel" />
                         </Form.Item>
                         <Form.Item {...tailLayout}>
                             <Space>

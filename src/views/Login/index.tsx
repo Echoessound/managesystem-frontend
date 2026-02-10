@@ -1,6 +1,7 @@
 import React from 'react';
-import { Layout, Menu, theme, Button, Form, Input, Space,message } from 'antd';
+import { Layout, Menu, theme, Button, Form, Input, Space, message } from 'antd';
 import axios from 'axios';
+
 const { Header, Content, Footer } = Layout;
 const tailLayout = {
     wrapperCol: { offset: 0, span: 24 },
@@ -46,8 +47,9 @@ const Login: React.FC = () => {
                 >
                     <Form
                         form={form}
-                        name="control-hooks"
+                        name="login_form"
                         onFinish={onFinish}
+                        autoComplete="off"
                         style={{
                             maxWidth: 400,
                             width: '100%',
@@ -58,10 +60,10 @@ const Login: React.FC = () => {
                         }}
                     >
                         <Form.Item name="username" label="账号" rules={[{ required: true }]}>
-                            <Input />
+                            <Input autoComplete="username" autoFocus />
                         </Form.Item>
                         <Form.Item name="password" label="密码" rules={[{ required: true }]}>
-                            <Input.Password />
+                            <Input.Password autoComplete="current-password" />
                         </Form.Item>
                         <Form.Item {...tailLayout}>
                             <Space>
@@ -72,7 +74,6 @@ const Login: React.FC = () => {
                                             message.error('请输入账号和密码');
                                             return;
                                         }
-                                        console.log('登录信息:', values);
                                         axios.post('http://localhost:8080/api/auth/login', values)
                                             .then(res => {
                                                 console.log(res.data);
@@ -81,7 +82,7 @@ const Login: React.FC = () => {
                                                     // 保存用户信息到 localStorage
                                                     localStorage.setItem('user', JSON.stringify(res.data.data.user));
                                                     localStorage.setItem('token', res.data.data.token);
-                                                    
+
                                                     // 根据用户角色跳转到不同主页
                                                     const userRole = res.data.data.user.role;
                                                     if (userRole === 'admin') {

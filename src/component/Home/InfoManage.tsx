@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button, Tag, message, Popconfirm, Space } from 'antd';
+import { Table, Button, Tag, message, Popconfirm, Space, Modal } from 'antd';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { HotelReviewStatusText, HotelReviewStatusColor } from '../../types';
@@ -8,6 +8,10 @@ const InfoManage: React.FC = () => {
     const [hotels, setHotels] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    
+    // 审核原因弹窗状态
+    const [rejectModalVisible, setRejectModalVisible] = useState(false);
+    const [rejectReason, setRejectReason] = useState('');
 
     const fetchHotels = async () => {
         setLoading(true);
@@ -59,6 +63,12 @@ const InfoManage: React.FC = () => {
         }
     };
 
+    // 显示审核不通过原因
+    const showRejectReason = (reason: string) => {
+        setRejectReason(reason || '暂无原因');
+        setRejectModalVisible(true);
+    };
+
     const columns = [
         {
             title: '酒店名称',
@@ -86,8 +96,23 @@ const InfoManage: React.FC = () => {
             title: '状态',
             key: 'status',
             dataIndex: 'status',
-            render: (status: string) => {
+            render: (status: string, record: any) => {
                 if (!status) return <Tag color="default">未知</Tag>;
+                
+                // 审核不通过状态显示为可点击链接
+                if (status === 'rejected') {
+                    return (
+                        <Tag 
+                            color={HotelReviewStatusColor[status as keyof typeof HotelReviewStatusColor]} 
+                            key={status}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => showRejectReason(record.rejectReason)}
+                        >
+                            {HotelReviewStatusText[status as keyof typeof HotelReviewStatusText]}
+                        </Tag>
+                    );
+                }
+                
                 return (
                     <Tag color={HotelReviewStatusColor[status as keyof typeof HotelReviewStatusColor]} key={status}>
                         {HotelReviewStatusText[status as keyof typeof HotelReviewStatusText]}
@@ -127,6 +152,22 @@ const InfoManage: React.FC = () => {
                 rowKey="_id" 
                 loading={loading}
             />
+            
+            {/* 审核不通过原因弹窗 */}
+            <Modal
+                title="审核不通过原因"
+                open={rejectModalVisible}
+                onCancel={() => setRejectModalVisible(false)}
+                footer={[
+                    <Button key="close" type="primary" onClick={() => setRejectModalVisible(false)}>
+                        确定
+                    </Button>
+                ]}
+            >
+                <p style={{ padding: '16px 0', fontSize: 15, lineHeight: 1.8 }}>
+                    {rejectReason}
+                </p>
+            </Modal>
         </div>
     );
 };
