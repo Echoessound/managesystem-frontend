@@ -10,4 +10,10 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    port: 5173,
+    headers: {
+      'Content-Security-Policy': "img-src 'self' data: blob: https: http://localhost:8080 http://localhost:5173; default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:8080;"
+    }
+  }
 })

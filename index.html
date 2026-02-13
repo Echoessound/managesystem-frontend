@@ -12,8 +12,8 @@
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="xss-protection" content="1; mode=block" />
     
-    <!-- CSP (内容安全策略) -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: http://localhost:8080; connect-src 'self' http://localhost:8080; frame-ancestors 'none';" />
+    <!-- CSP (内容安全策略) - 允许加载 blob 和 data 图片 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: http://localhost:8080 http://localhost:5173; connect-src 'self' http://localhost:8080; frame-ancestors 'none';" />
   </head>
   <body>
     <div id="root"></div>

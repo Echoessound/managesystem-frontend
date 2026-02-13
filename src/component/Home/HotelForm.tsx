@@ -136,6 +136,8 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
     const [filteredCities, setFilteredCities] = useState<CityData[]>([]);
     const [loadingCities, setLoadingCities] = useState(false);
     const [form] = Form.useForm(externalForm); // 使用传入的 form 或创建新的
+    
+    // 监听 images 字段变化
 
     // 从高德地图加载城市列表
     const loadCitiesFromAmap = useCallback(async () => {
@@ -319,7 +321,7 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
 
     return (
         <Layout>
-            <Content style={{ padding: '0 48px' }}>
+            <Content style={{ padding: '24px 48px' }}>
                 <Card title="基础信息" type="inner" style={{ marginBottom: 24 }}>
                     <Form.Item
                         label="酒店名称"
@@ -373,47 +375,123 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
                         {(fields, { add, remove }) => (
                             <>
                                 {fields.map(({ key, name, ...restField }) => (
-                                    <div key={key} style={{ display: 'flex', marginBottom: 8, alignItems: 'flex-start' }}>
-                                        <Form.Item
-                                            {...restField}
-                                            name={[name, 'name']}
-                                            rules={[{ required: true, message: '房型名称' }]}
-                                            style={{ marginBottom: 0, flex: 2, marginRight: 8, width: '50%' }}
-                                        >
-                                            <Input placeholder="房型名称" />
-                                        </Form.Item>
-                                        <Form.Item
-                                            {...restField}
-                                            name={[name, 'price']}
-                                            rules={[{ required: true, message: '价格' }]}
-                                            style={{ marginBottom: 0, flex: 1, marginRight: 8 }}
-                                        >
-                                            <InputNumber placeholder="价格" min={0} addonAfter="元" style={{ width: '100%' }} />
-                                        </Form.Item>
-                                        <Form.Item
-                                            {...restField}
-                                            name={[name, 'capacity']}
-                                            rules={[{ required: true, message: '容纳人数' }]}
-                                            style={{ marginBottom: 0, flex: 1, marginRight: 8 }}
-                                        >
-                                            <InputNumber placeholder="容纳人数" min={1} addonAfter="人" style={{ width: '100%' }} />
-                                        </Form.Item>
-                                        <Form.Item
-                                            {...restField}
-                                            name={[name, 'count']}
-                                            rules={[{ required: true, message: '房间数量' }]}
-                                            style={{ marginBottom: 0, flex: 1, marginRight: 8 }}
-                                        >
-                                            <InputNumber placeholder="数量" min={0} addonAfter="间" style={{ width: '100%' }} />
-                                        </Form.Item>
-                                        <Form.Item shouldUpdate noStyle>
-                                            {() => (
-                                                <Button type="link" danger onClick={() => remove(name)} style={{ height: 'auto', padding: '4px 0' }}>
+                                    <Card key={key} size="small" style={{ marginBottom: 16, background: '#fafafa' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                <span style={{ fontWeight: 500, color: '#1890ff' }}>房型 {key + 1}</span>
+                                                <Button type="link" danger onClick={() => remove(name)} size="small">
                                                     删除
                                                 </Button>
-                                            )}
-                                        </Form.Item>
-                                    </div>
+                                            </div>
+                                            <Form.Item
+                                                {...restField}
+                                                label="房型名称"
+                                                name={[name, 'name']}
+                                                rules={[{ required: true, message: '请输入房型名称' }]}
+                                                style={{ marginBottom: 0 }}
+                                            >
+                                                <Input placeholder="如：豪华大床房/标准间/家庭套房" />
+                                            </Form.Item>
+                                            <Form.Item
+                                                {...restField}
+                                                label="房型简介"
+                                                name={[name, 'description']}
+                                                style={{ marginBottom: 0 }}
+                                            >
+                                                <Input.TextArea 
+                                                    placeholder="请简要描述该房型的特点和优势" 
+                                                    rows={2}
+                                                    showCount
+                                                    maxLength={200}
+                                                />
+                                            </Form.Item>
+                                            <Form.Item
+                                                {...restField}
+                                                label="房型图片"
+                                                name={[name, 'images']}
+                                                valuePropName="fileList"
+                                                getValueFromEvent={(e: any) => {
+                                                    if (Array.isArray(e)) return e;
+                                                    return e?.fileList;
+                                                }}
+                                                style={{ marginBottom: 0 }}
+                                                extra="支持 jpg/png 格式，建议尺寸 800x600，最多3张"
+                                            >
+                                                <Upload
+                                                    listType="picture-card"
+                                                    name="roomImage"
+                                                    maxCount={3}
+                                                    accept="image/*"
+                                                    beforeUpload={(file) => {
+                                                        // 返回 promise 来异步处理
+                                                        return new Promise((resolve) => {
+                                                            const reader = new FileReader();
+                                                            reader.onload = (e) => {
+                                                                // 创建带有 data URL 预览的文件对象
+                                                                const newFile = Object.assign(file, {
+                                                                    preview: e.target?.result,
+                                                                    originFileObj: file,
+                                                                    url: e.target?.result // 用于预览显示
+                                                                }) as any;
+                                                                // 获取当前房型的图片并追加新文件
+                                                                const currentImages = form.getFieldValue([name, 'images']) || [];
+                                                                const updatedImages = [...currentImages, newFile];
+                                                                // 限制数量不超过 maxCount (3张)
+                                                                if (updatedImages.length > 3) {
+                                                                    message.warning('每个房型最多只能上传3张图片');
+                                                                    resolve(false);
+                                                                    return;
+                                                                }
+                                                                form.setFieldValue([name, 'images'], updatedImages);
+                                                                resolve(false); // 阻止自动上传
+                                                            };
+                                                            reader.readAsDataURL(file);
+                                                        });
+                                                    }}
+                                                    onRemove={(file) => {
+                                                        const currentImages = form.getFieldValue([name, 'images']) || [];
+                                                        const updatedImages = currentImages.filter((f: any) => f.uid !== file.uid);
+                                                        form.setFieldValue([name, 'images'], updatedImages);
+                                                        return true;
+                                                    }}
+                                                >
+                                                    <div>
+                                                        <UploadOutlined />
+                                                        <div style={{ marginTop: 8 }}>上传图片</div>
+                                                    </div>
+                                                </Upload>
+                                            </Form.Item>
+                                            <div style={{ display: 'flex', gap: 12 }}>
+                                                <Form.Item
+                                                    {...restField}
+                                                    label="价格"
+                                                    name={[name, 'price']}
+                                                    rules={[{ required: true, message: '请输入价格' }]}
+                                                    style={{ marginBottom: 0, flex: 1 }}
+                                                >
+                                                    <InputNumber placeholder="价格" min={0} addonAfter="元" style={{ width: '100%' }} />
+                                                </Form.Item>
+                                                <Form.Item
+                                                    {...restField}
+                                                    label="容纳人数"
+                                                    name={[name, 'capacity']}
+                                                    rules={[{ required: true, message: '请输入容纳人数' }]}
+                                                    style={{ marginBottom: 0, flex: 1 }}
+                                                >
+                                                    <InputNumber placeholder="容纳人数" min={1} addonAfter="人" style={{ width: '100%' }} />
+                                                </Form.Item>
+                                                <Form.Item
+                                                    {...restField}
+                                                    label="房间数量"
+                                                    name={[name, 'count']}
+                                                    rules={[{ required: true, message: '请输入房间数量' }]}
+                                                    style={{ marginBottom: 0, flex: 1 }}
+                                                >
+                                                    <InputNumber placeholder="数量" min={0} addonAfter="间" style={{ width: '100%' }} />
+                                                </Form.Item>
+                                            </div>
+                                        </div>
+                                    </Card>
                                 ))}
                                 <Form.Item>
                                     <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
@@ -452,18 +530,67 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
                         name="images"
                         valuePropName="fileList"
                         getValueFromEvent={(e: any) => {
+                            // 如果是 change 事件，Ant Design 会自动处理
                             if (Array.isArray(e)) return e;
                             return e?.fileList;
                         }}
-                        extra="支持 jpg/png 格式"
+                        extra="支持 jpg/png 格式，最多9张"
                     >
                         <Upload
                             listType="picture-card"
-                            name="images"
+                            name="hotelImage"
                             maxCount={9}
                             accept="image/*"
-                            beforeUpload={() => false}
-                            onRemove={() => true}
+                            fileList={form.getFieldValue('images') || []}
+                            onChange={(info) => {
+                                console.log('[HotelForm] Upload onChange:', info.fileList.length, 'files');
+                            }}
+                            beforeUpload={(file, fileList) => {
+                                // 如果文件已经有 url（来自数据库的初始值），跳过处理
+                                if (file.url) {
+                                    // 将现有文件添加到表单值中
+                                    const currentFileList = form.getFieldValue('images') || [];
+                                    if (!currentFileList.find((f: any) => f.uid === file.uid)) {
+                                        form.setFieldValue('images', [...currentFileList, file]);
+                                    }
+                                    resolve(false);
+                                    return;
+                                }
+                                
+                                // 返回 promise 来异步处理新上传的文件
+                                return new Promise((resolve) => {
+                                    const reader = new FileReader();
+                                    reader.onload = (e) => {
+                                        // 创建带有 data URL 预览的文件对象
+                                        const newFile = Object.assign(file, {
+                                            uid: file.uid || Date.now(),
+                                            preview: e.target?.result,
+                                            originFileObj: file,
+                                            url: e.target?.result // 用于预览显示
+                                        }) as any;
+                                        
+                                        // 直接使用 Upload 组件的 fileList
+                                        const currentFileList = form.getFieldValue('images') || [];
+                                        const newFileList = [...currentFileList, newFile];
+                                        
+                                        if (newFileList.length > 9) {
+                                            message.warning('最多只能上传9张图片');
+                                            resolve(false);
+                                            return;
+                                        }
+                                        
+                                        form.setFieldValue('images', newFileList);
+                                        resolve(false); // 阻止自动上传
+                                    };
+                                    reader.readAsDataURL(file);
+                                });
+                            }}
+                            onRemove={(file) => {
+                                const currentImages = form.getFieldValue('images') || [];
+                                const updatedImages = currentImages.filter((f: any) => f.uid !== file.uid);
+                                form.setFieldValue('images', updatedImages);
+                                return true;
+                            }}
                         >
                             <div>
                                 <UploadOutlined />
@@ -489,8 +616,25 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
                             name="license"
                             maxCount={1}
                             accept="image/*"
-                            beforeUpload={() => false}
-                            onRemove={() => true}
+                            beforeUpload={(file) => {
+                                return new Promise((resolve) => {
+                                    const reader = new FileReader();
+                                    reader.onload = (e) => {
+                                        const newFile = Object.assign(file, {
+                                            preview: e.target?.result,
+                                            originFileObj: file,
+                                            url: e.target?.result
+                                        }) as any;
+                                        form.setFieldValue('license', [newFile]);
+                                        resolve(false);
+                                    };
+                                    reader.readAsDataURL(file);
+                                });
+                            }}
+                            onRemove={() => {
+                                form.setFieldValue('license', []);
+                                return true;
+                            }}
                         >
                             <div>
                                 <UploadOutlined />

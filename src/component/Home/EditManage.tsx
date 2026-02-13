@@ -31,6 +31,7 @@ const EditManage: React.FC = () => {
                 setHotelStatus(hotel.status);
                 
                 // 处理图片数据
+                console.log('[DEBUG] hotel.images from API:', hotel.images);
                 const images = hotel.images && hotel.images.length > 0 
                     ? hotel.images.map((url: string, index: number) => ({
                         uid: `-${index}`,
@@ -40,6 +41,7 @@ const EditManage: React.FC = () => {
                         originFileObj: undefined
                       }))
                     : [];
+                console.log('[DEBUG] Processed images:', images);
 
                 // 处理营业执照数据
                 const license = hotel.license 
@@ -52,6 +54,22 @@ const EditManage: React.FC = () => {
                       }]
                     : [];
 
+                // 处理房型图片数据（支持多张）
+                const roomTypes = hotel.roomTypes && hotel.roomTypes.length > 0
+                    ? hotel.roomTypes.map((rt: any, index: number) => ({
+                        ...rt,
+                        images: rt.images && rt.images.length > 0 
+                            ? rt.images.map((img: string, imgIndex: number) => ({
+                                uid: `-room-${index}-${imgIndex}`,
+                                name: `room-${index}-${imgIndex}.png`,
+                                status: 'done',
+                                url: img.startsWith('http') ? img : `http://localhost:8080${img}`,
+                                originFileObj: undefined
+                            }))
+                            : []
+                      }))
+                    : [];
+
                 form.setFieldsValue({
                     name: hotel.name,
                     description: hotel.description,
@@ -60,7 +78,7 @@ const EditManage: React.FC = () => {
                     contactPhone: hotel.contactPhone,
                     price: hotel.price,
                     amenities: hotel.amenities,
-                    roomTypes: hotel.roomTypes,
+                    roomTypes: roomTypes,
                     images: images,
                     license: license
                 });
@@ -98,36 +116,81 @@ const EditManage: React.FC = () => {
             });
         }
 
+        // 房型数据 - 使用 JSON 格式发送，避免 FormData key 冲突
+        if (values.roomTypes) {
+            const roomTypesData = values.roomTypes.map((rt: any, index: number) => {
+                const rtData: any = {
+                    name: rt.name || '',
+                    description: rt.description || '',
+                    price: String(rt.price),
+                    capacity: String(rt.capacity),
+                    count: String(rt.count),
+                    images: []
+                };
+                
+                // 处理房型图片（支持多张）- 只保留原图片 URL，不传新上传的图片（它们通过 roomTypeImages 字段发送）
+                if (rt.images && rt.images.length > 0) {
+                    rt.images.forEach((img: any) => {
+                        // 只处理已经有 URL 的原图片（来自数据库的），排除新上传的（只有 originFileObj）
+                        if (img.url && !img.originFileObj) {
+                            // 保留的原图片，传递 URL（去掉域名部分）
+                            const url = img.url.startsWith('http://localhost:8080') 
+                                ? img.url.replace('http://localhost:8080', '')
+                                : img.url;
+                            rtData.images.push(url);
+                        }
+                    });
+                }
+                
+                return rtData;
+            });
+            formData.append('roomTypes', JSON.stringify(roomTypesData));
+        }
+        
+        // 单独处理房型图片文件（多张）- 使用不同的字段名
         if (values.roomTypes) {
             values.roomTypes.forEach((rt: any, index: number) => {
-                formData.append(`roomTypes[${index}][name]`, rt.name);
-                formData.append(`roomTypes[${index}][price]`, String(rt.price));
-                formData.append(`roomTypes[${index}][capacity]`, String(rt.capacity));
-                formData.append(`roomTypes[${index}][count]`, String(rt.count));
+                if (rt.images && rt.images.length > 0) {
+                    rt.images.forEach((img: any, imgIndex: number) => {
+                        if (img.originFileObj) {
+                            // 新上传的图片作为文件
+                            formData.append(`roomTypeImages[${index}]`, img.originFileObj);
+                        }
+                    });
+                }
             });
         }
 
-        if (values.images) {
-            const oldImages: string[] = [];
+        // 处理酒店图片（支持多张）- 只发送新上传的文件或原有图片的URL，不重复发送
+        if (values.images && values.images.length > 0) {
             values.images.forEach((file: any) => {
                 if (file.originFileObj) {
+                    // 新上传的图片 - 作为文件上传
                     formData.append('images', file.originFileObj);
-                } else if (file.url) {
-                    oldImages.push(file.url);
+                } else if (file.url && !file.originFileObj) {
+                    // 保留的原图片（没有 originFileObj 表示是数据库加载的）- 传递 URL（去掉域名）
+                    const url = file.url.startsWith('http://localhost:8080') 
+                        ? file.url.replace('http://localhost:8080', '')
+                        : file.url;
+                    formData.append('images', url);
                 }
+                // 不再单独处理 preview，避免重复
             });
-            // 如果有保留的原图片，传给后端
-            if (oldImages.length > 0) {
-                formData.append('images', JSON.stringify(oldImages));
-            }
         }
 
         // 处理营业执照
-        if (values.license && values.license[0] && values.license[0].originFileObj) {
-            formData.append('license', values.license[0].originFileObj);
-        } else if (values.license && values.license[0] && values.license[0].url) {
-            // 保留原执照，直接传递 URL
-            formData.append('license', values.license[0].url.replace('http://localhost:8080', ''));
+        if (values.license && values.license.length > 0) {
+            const licenseFile = values.license[0];
+            if (licenseFile.originFileObj) {
+                // 新上传的执照
+                formData.append('license', licenseFile.originFileObj);
+            } else if (licenseFile.url) {
+                // 保留原执照，传递 URL
+                formData.append('license', licenseFile.url.replace('http://localhost:8080', ''));
+            } else if (licenseFile.preview && licenseFile.preview.startsWith('data:')) {
+                // Base64 预览图
+                formData.append('license', licenseFile.preview);
+            }
         }
 
         const response = await axios.put(`http://localhost:8080/api/hotel/${id}`, formData, {

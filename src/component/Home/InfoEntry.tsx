@@ -53,28 +53,66 @@ const InfoEntry: React.FC = () => {
             });
         }
 
-        // 房型 (需要序列化或重复key)
+        // 房型数据 - 使用 JSON 格式发送，避免 FormData key 冲突
+        if (values.roomTypes) {
+            const roomTypesData = values.roomTypes.map((rt: any, index: number) => {
+                const rtData: any = {
+                    name: rt.name || '',
+                    description: rt.description || '',
+                    price: String(rt.price),
+                    capacity: String(rt.capacity),
+                    count: String(rt.count),
+                    images: []
+                };
+                
+                // 处理房型图片（支持多张）
+                if (rt.images && rt.images.length > 0) {
+                    rt.images.forEach((img: any) => {
+                        if (img.originFileObj) {
+                            // 新上传的图片作为文件
+                            rtData.images.push({ type: 'file', data: img.originFileObj });
+                        }
+                    });
+                }
+                
+                return rtData;
+            });
+            formData.append('roomTypes', JSON.stringify(roomTypesData));
+        }
+        
+        // 单独处理房型图片文件（多张）
         if (values.roomTypes) {
             values.roomTypes.forEach((rt: any, index: number) => {
-                formData.append(`roomTypes[${index}][name]`, rt.name);
-                formData.append(`roomTypes[${index}][price]`, String(rt.price));
-                formData.append(`roomTypes[${index}][capacity]`, String(rt.capacity));
-                formData.append(`roomTypes[${index}][count]`, String(rt.count));
+                if (rt.images && rt.images.length > 0) {
+                    rt.images.forEach((img: any) => {
+                        if (img.originFileObj) {
+                            formData.append(`roomTypeImages[${index}]`, img.originFileObj);
+                        }
+                    });
+                }
             });
         }
 
-        // 图片文件
-        if (values.images) {
+        // 图片文件 - 优先使用 Base64 格式，避免重复发送
+        if (values.images && values.images.length > 0) {
             values.images.forEach((file: any) => {
-                if (file.originFileObj) {
+                // 只发送一个：优先使用 preview (Base64)，其次使用 originFileObj
+                if (file.preview && file.preview.startsWith('data:')) {
+                    formData.append('images', file.preview);
+                } else if (file.originFileObj) {
                     formData.append('images', file.originFileObj);
                 }
             });
         }
 
-        // 营业执照
-        if (values.license && values.license[0] && values.license[0].originFileObj) {
-            formData.append('license', values.license[0].originFileObj);
+        // 营业执照 - 优先使用 Base64 格式
+        if (values.license && values.license.length > 0) {
+            const licenseFile = values.license[0];
+            if (licenseFile.preview) {
+                formData.append('license', licenseFile.preview);
+            } else if (licenseFile.originFileObj) {
+                formData.append('license', licenseFile.originFileObj);
+            }
         }
 
         console.log('提交数据...');
@@ -130,7 +168,7 @@ const InfoEntry: React.FC = () => {
       >
         <HotelForm form={form} />
 
-        <Form.Item>
+        <Form.Item style={{padding:'24px'}}>
             <Space>
                 <Button type="primary" htmlType="submit" loading={loading}>
                     提交录入
