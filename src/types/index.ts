@@ -84,6 +84,20 @@ export const HotelReviewStatusColor: Record<HotelReviewStatus, string> = {
 /** 酒店发布状态 */
 export type HotelPublishStatus = 'published' | 'unpublished';/*发布状态：已发布、未发布*/
 
+/** 酒店发布状态颜色映射 */
+export const HotelPublishStatusColor: Record<HotelPublishStatus, string> = {
+    'published': 'green',
+    'unpublished': 'orange'
+};
+
+/** 酒店发布状态中文映射 */
+export const HotelPublishStatusText: Record<HotelPublishStatus, string> = {
+    'published': '已发布',
+    'unpublished': '未发布'
+};
+
+
+
 /** 酒店基础信息 */
 export interface Hotel {
     // 基础信息

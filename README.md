@@ -1,6 +1,6 @@
 # 酒店管理系统前端
 
-基于 React 19 + TypeScript + Ant Design 构建的酒店管理系统前端应用，提供完整的用户界面和商家管理功能。
+基于 React 19 + TypeScript + Ant Design 构建的酒店管理系统前端应用，提供完整的用户界面、商家管理功能和管理员审核功能。
 
 ## 技术栈
 
@@ -27,15 +27,23 @@ managesystem-frontend/
 │   │   ├── Home/                # 商家管理主页
 │   │   ├── Login/               # 用户登录页面
 │   │   ├── Register/            # 用户注册页面
-│   │   └── PersonalProfile/     # 个人中心页面
+│   │   ├── PersonalProfile/     # 个人中心页面
+│   │   └── AdminHome/           # 管理员审核主页
 │   ├── component/               # 可复用组件
-│   │   └── Home/
-│   │       ├── InfoEntry.tsx    # 酒店信息录入组件
-│   │       ├── InfoManage.tsx   # 酒店信息管理组件
-│   │       └── EditManage.tsx   # 编辑酒店信息组件
+│   │   ├── Home/
+│   │   │   ├── InfoEntry.tsx    # 酒店信息录入组件
+│   │   │   ├── InfoManage.tsx   # 酒店信息管理组件
+│   │   │   ├── EditManage.tsx   # 编辑酒店信息组件
+│   │   │   └── HotelForm.tsx     # 酒店信息表单组件
+│   │   └── AdminHome/
+│   │       ├── HotelReview.tsx   # 酒店审核组件
+│   │       └── HistoryReview.tsx # 审核历史记录组件
 │   ├── types/
 │   │   └── index.ts             # TypeScript 类型定义
-│   ├── services/                # API 服务层（待实现）
+│   ├── utils/
+│   │   ├── MapContainer.tsx     # 地图组件
+│   │   └── MapContainer.css     # 地图组件样式
+│   ├── services/                # API 服务层
 │   ├── index.css                # 全局样式文件
 │   └── vite-env.d.ts            # Vite 类型声明
 ├── public/
@@ -61,8 +69,21 @@ managesystem-frontend/
 | 酒店管理 | `InfoManage.tsx` | 查看和管理已录入的酒店列表 |
 | 编辑酒店 | `EditManage.tsx` | 修改现有酒店信息 |
 | 录入酒店 | `InfoEntry.tsx` | 添加新酒店信息 |
+| 酒店表单 | `HotelForm.tsx` | 酒店信息填写表单组件 |
 
-### 3. 个人中心
+### 3. 管理员审核中心
+| 页面 | 组件 | 功能说明 |
+|------|------|----------|
+| 审核主页 | `AdminHome/` | 管理员审核入口界面 |
+| 酒店审核 | `HotelReview.tsx` | 审核待处理的酒店申请 |
+| 审核历史 | `HistoryReview.tsx` | 查看审核历史记录 |
+
+### 4. 辅助功能
+| 组件 | 功能说明 |
+|------|----------|
+| 地图组件 | `MapContainer.tsx` | 展示酒店位置，支持地图交互 |
+
+### 5. 个人中心
 | 页面 | 路由 | 功能说明 |
 |------|------|----------|
 | 个人中心 | `/PersonalProfile` | 用户个人信息管理 |
@@ -76,7 +97,7 @@ interface Hotel {
   // 基础信息
   name: string;          // 酒店名称
   description: string;   // 酒店描述
-  address: string;        // 详细地址
+  address: string;       // 详细地址
   city: string;          // 所在城市
   
   // 价格与评分
@@ -85,7 +106,7 @@ interface Hotel {
   
   // 图片与设施
   images: string[];      // 酒店图片 URL 数组
-  amenities: string[];  // 设施配置列表
+  amenities: string[];   // 设施配置列表
   
   // 房型信息
   roomTypes: RoomType[]; // 房型信息数组
@@ -94,13 +115,19 @@ interface Hotel {
   contactPhone: string;  // 联系电话
   checkInTime: string;   // 最早入住时间
   checkOutTime: string;  // 最晚退房时间
+  
+  // 审核相关
+  status: 'pending' | 'approved' | 'rejected'; // 审核状态
+  rejectReason?: string; // 审核拒绝原因
+  license: string[];     // 营业执照图片
 }
 
 interface RoomType {
   name: string;        // 房型名称
   price: number;       // 房型价格
-  capacity: number;    // 容纳人数
-  count: number;       // 房间数量
+  capacity: number;   // 容纳人数
+  count: number;      // 房间数量
+  images: string[];   // 房型图片
 }
 ```
 
@@ -125,6 +152,12 @@ interface RoomType {
 | `/api/hotel/:id` | GET | 获取酒店详情 |
 | `/api/hotel/:id` | PUT | 更新酒店信息 |
 | `/api/hotel/:id` | DELETE | 删除酒店 |
+
+### 酒店审核接口
+
+| 接口路径 | 请求方法 | 功能描述 |
+|----------|----------|----------|
+| `/api/hotel/:id/review` | PUT | 审核酒店（通过/拒绝） |
 
 ## 快速开始
 

@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Tag, message, Popconfirm, Space, Modal } from 'antd';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { HotelReviewStatusText, HotelReviewStatusColor } from '../../types';
-
+import { HotelReviewStatusText, HotelReviewStatusColor, type HotelPublishStatus} from '../../types';
 const InfoManage: React.FC = () => {
     const [hotels, setHotels] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -93,7 +92,7 @@ const InfoManage: React.FC = () => {
             key: 'rating',
         },
         {
-            title: '状态',
+            title: '审核状态',
             key: 'status',
             dataIndex: 'status',
             render: (status: string, record: any) => {
@@ -121,6 +120,15 @@ const InfoManage: React.FC = () => {
             },
         },
         {
+            title: '发布状态',
+            key: 'publishStatus',
+            dataIndex: 'publishStatus',
+            render: (publishStatus: HotelPublishStatus) => {
+                return <Tag color={publishStatus === 'published' ? 'green' : 'orange'}>{publishStatus === 'published' ? '已发布' : '未发布'}</Tag>;
+            },
+            
+        },
+        {
             title: '操作',
             key: 'action',
             render: (_: any, record: any) => (
@@ -128,6 +136,92 @@ const InfoManage: React.FC = () => {
                     <Button type="link" onClick={() => navigate(`/edit/${record._id}`)}>
                         编辑
                     </Button>
+                    {
+                        (record.status === 'approved') && (
+                            record.publishStatus === 'published' ? (
+                                <Popconfirm
+                                    title="确定要下线这家酒店吗？"
+                                    onConfirm={async () => {
+                                        // 下线酒店操作
+                                        try {
+                                            const token = localStorage.getItem('token');
+                                            const res = await fetch(`/api/hotel/publish/${record._id}`, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+                                                },
+                                                body: JSON.stringify({ publish: false })
+                                            });
+                                            const data = await res.json();
+                                            if (data && (data.code === 0 || data.success)) {
+                                                // 刷新列表或提示
+                                                if (typeof fetchHotels === 'function') fetchHotels();
+                                                if (typeof message !== 'undefined') message.success('酒店已下架');
+                                            } else {
+                                                if (typeof message !== 'undefined') message.error(data.message || '下架失败');
+                                            }
+                                        } catch (e) {
+                                            if (typeof message !== 'undefined') message.error('网络异常，下架失败');
+                                        }
+                                    }}
+                                    okText="确定"
+                                    cancelText="取消"
+                                >
+                                    <Button type="link" style={{ color: 'orange' }}>下架</Button>
+                                </Popconfirm>
+                            ) : (
+                                <Popconfirm
+                                    title="确定要发布这家酒店吗？"
+                                    onConfirm={async () => {
+                                        // 发布酒店操作
+                                        try {
+                                            const token = localStorage.getItem('token');
+                                            const res = await fetch(`/api/hotel/publish/${record._id}`, {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+                                                },
+                                                body: JSON.stringify({ publish: true })
+                                            });
+                                            const data = await res.json();
+                                            if (data && (data.code === 0 || data.success)) {
+                                                // 刷新列表或提示
+                                                if (typeof fetchHotels === 'function') fetchHotels();
+                                                if (typeof message !== 'undefined') message.success('酒店已发布');
+                                            } else {
+                                                if (typeof message !== 'undefined') message.error(data.message || '发布失败');
+                                            }
+                                        } catch (e) {
+                                            if (typeof message !== 'undefined') message.error('网络异常，发布失败');
+                                        }
+                                    }}
+                                    okText="确定"
+                                    cancelText="取消"
+                                >
+                                    <Button type="link" style={{ color: 'green' }}>发布</Button>
+                                </Popconfirm>
+                            )
+                        )
+                    }
+                    {
+                        (record.status !== 'approved') && (
+                            <Button
+                                type="link"
+                                style={{ color: '#faad14' }}
+                                onClick={() => {
+                                    if (typeof message !== 'undefined') {
+                                        message.info('当前酒店需要审核通过后才能发布或下线。');
+                                    } else {
+                                        alert('当前酒店需要审核通过后才能发布或下线。');
+                                    }
+                                }}
+                            >
+                                发布/下线
+                            </Button>
+                        )
+                    }
                     <Popconfirm
                         title="确定要删除这家酒店吗？"
                         onConfirm={() => deleteHotel(record._id)}

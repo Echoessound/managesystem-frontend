@@ -545,16 +545,15 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
                             onChange={(info) => {
                                 console.log('[HotelForm] Upload onChange:', info.fileList.length, 'files');
                             }}
-                            beforeUpload={(file, fileList) => {
+                            beforeUpload={(file: any, _fileList) => {
                                 // 如果文件已经有 url（来自数据库的初始值），跳过处理
-                                if (file.url) {
+                                if ('url' in file && file.url) {
                                     // 将现有文件添加到表单值中
                                     const currentFileList = form.getFieldValue('images') || [];
                                     if (!currentFileList.find((f: any) => f.uid === file.uid)) {
                                         form.setFieldValue('images', [...currentFileList, file]);
                                     }
-                                    resolve(false);
-                                    return;
+                                    return false;
                                 }
                                 
                                 // 返回 promise 来异步处理新上传的文件
