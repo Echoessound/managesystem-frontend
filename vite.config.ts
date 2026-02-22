@@ -19,7 +19,7 @@ export default defineConfig({
       }
     },
     headers: {
-      'Content-Security-Policy': "img-src 'self' data: blob: https: http://localhost:8080 http://localhost:5173; default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:8080;"
+      'Content-Security-Policy': "img-src 'self' data: blob: https: http://localhost:8080 http://localhost:5173 https://*.amap.com http://*.amap.com; default-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.amap.com http://*.amap.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.amap.com http://*.amap.com; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:8080 https://*.amap.com http://*.amap.com; worker-src 'self' blob:;"
     }
   }
 })

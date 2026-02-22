@@ -133,7 +133,7 @@ const Register: React.FC = () => {
                         <Form.Item name="role" label="角色" rules={[{ required: true, message: '请选择角色' }]}>
                             <Select>
                                 <Select.Option value="admin">管理员</Select.Option>
-                                <Select.Option value="user">商户</Select.Option>
+                                <Select.Option value="merchant">商户</Select.Option>
                             </Select>
                         </Form.Item>
                         <Form.Item name="phone" label="电话" rules={[{ required: true, message: '请输入电话' }, { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的电话号码' }]}>

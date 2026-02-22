@@ -206,7 +206,48 @@ const InfoManage: React.FC = () => {
                         )
                     }
                     {
-                        (record.status !== 'approved') && (
+                        (record.status === 'rejected') && (
+                            <Button
+                                type="link"
+                                style={{ color: '#faad14' }}
+                                onClick={async () => {
+                                    try {
+                                        const token = localStorage.getItem('token');
+                                        const res = await fetch(`/api/hotel/${record._id}/resubmit`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+                                            }
+                                        });
+                                        const data = await res.json();
+                                        if (data && data.code === 200) {
+                                            if (typeof fetchHotels === 'function') fetchHotels();
+                                            if (typeof message !== 'undefined') message.success('已提交审核，请等待管理员审核');
+                                        } else {
+                                            if (typeof message !== 'undefined') message.error(data.message || '提交失败');
+                                        }
+                                    } catch (e) {
+                                        if (typeof message !== 'undefined') message.error('网络异常，提交失败');
+                                    }
+                                }}
+                            >
+                                再次审核
+                            </Button>
+                        )
+                    }
+                    {
+                        (record.status === 'pending') && (
+                            <Button
+                                type="link"
+                                style={{ color: '#faad14' }}
+                            >
+                                待审核
+                            </Button>
+                        )
+                    }
+                    {
+                        (record.status !== 'approved' && record.status !== 'rejected' && record.status !== 'pending') && (
                             <Button
                                 type="link"
                                 style={{ color: '#faad14' }}
@@ -218,7 +259,7 @@ const InfoManage: React.FC = () => {
                                     }
                                 }}
                             >
-                                发布/下线
+                                上线/下线
                             </Button>
                         )
                     }

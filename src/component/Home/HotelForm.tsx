@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Form, Input, Select, Upload, Button, Card, InputNumber, Layout, Drawer, message } from 'antd';
-import { UploadOutlined, PlusOutlined, EnvironmentOutlined, SearchOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Form, Input, Select, Upload, Button, Card, InputNumber, Layout, Drawer, message, Modal } from 'antd';
+import { UploadOutlined, PlusOutlined, EnvironmentOutlined, SearchOutlined, LoadingOutlined, AimOutlined } from '@ant-design/icons';
 import AMapLoader from '@amap/amap-jsapi-loader';
 import VirtualList from 'rc-virtual-list';
+import MapContainer from '../../utils/MapContainer';
 
 declare global {
     interface Window {
@@ -130,6 +131,8 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
     const [cityDrawerOpen, setCityDrawerOpen] = useState(false);
     const [locatedCity, setLocatedCity] = useState<string | null>(null);
     const [locating, setLocating] = useState(false);
+    const [mapModalOpen, setMapModalOpen] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState<{ address: string; lng: number; lat: number } | null>(null);
     const [groupedCities, setGroupedCities] = useState<GroupedCities>({});
     const [allCities, setAllCities] = useState<CityData[]>([]);
     const [searchValue, setSearchValue] = useState('');
@@ -227,7 +230,7 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
                 
                 try {
                     // 使用高德逆地理编码 API 获取城市
-                    const apiKey = "ec60beb00a8047166085fd4e9395b0fa";
+                    const apiKey = "d4a40190ad0e21c36b11246dfa469200";
                     const location = `${longitude},${latitude}`;
                     const apiUrl = `https://restapi.amap.com/v3/geocode/regeo?location=${location}&key=${apiKey}`;
                     
@@ -358,7 +361,27 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
                         name="address"
                         rules={[{ required: true, message: '请输入详细地址' }]}
                     >
-                        <Input id="addressInput" placeholder="请输入详细地址并选择建议地址" />
+                        <Input 
+                            id="addressInput" 
+                            placeholder="请输入详细地址或点击右侧按钮在地图上选择" 
+                            suffix={
+                                <Button 
+                                    type="text" 
+                                    icon={<AimOutlined />} 
+                                    onClick={() => setMapModalOpen(true)}
+                                    title="在地图上选择位置"
+                                    size="small"
+                                />
+                            }
+                        />
+                    </Form.Item>
+
+                    {/* 隐藏的经纬度字段 */}
+                    <Form.Item name="longitude" hidden>
+                        <Input type="hidden" />
+                    </Form.Item>
+                    <Form.Item name="latitude" hidden>
+                        <Input type="hidden" />
                     </Form.Item>
 
                     <Form.Item
@@ -648,7 +671,7 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
             <Drawer
                 title="选择所在城市"
                 placement="bottom"
-                height="80vh"
+                size="large"
                 onClose={() => setCityDrawerOpen(false)}
                 open={cityDrawerOpen}
                 extra={
@@ -831,6 +854,59 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
                     </div>
                 )}
             </Drawer>
+
+            {/* 地图选择 Modal */}
+            <Modal
+                title="在地图上选择酒店位置"
+                open={mapModalOpen}
+                onCancel={() => setMapModalOpen(false)}
+                footer={[
+                    <Button key="cancel" onClick={() => setMapModalOpen(false)}>
+                        取消
+                    </Button>,
+                    <Button 
+                        key="confirm" 
+                        type="primary" 
+                        disabled={!selectedLocation}
+                        onClick={() => {
+                            if (selectedLocation) {
+                                form.setFieldsValue({
+                                    address: selectedLocation.address,
+                                    longitude: selectedLocation.lng,
+                                    latitude: selectedLocation.lat
+                                });
+                                message.success(`已选择位置: ${selectedLocation.address}`);
+                                setMapModalOpen(false);
+                            }
+                        }}
+                    >
+                        确认位置
+                    </Button>
+                ]}
+                width={800}
+                destroyOnHidden
+            >
+                {selectedLocation && (
+                    <div style={{ marginBottom: 16, padding: 12, background: '#f5f5f5', borderRadius: 4 }}>
+                        <strong>已选择：</strong>{selectedLocation.address}
+                        <br />
+                        <small style={{ color: '#666' }}>
+                            经度: {selectedLocation.lng.toFixed(6)}, 纬度: {selectedLocation.lat.toFixed(6)}
+                        </small>
+                    </div>
+                )}
+                <MapContainer
+                    onAddressSelect={(address: string, lng: number, lat: number) => {
+                        console.log('地图选择:', address, lng, lat);
+                        setSelectedLocation({ address, lng, lat });
+                    }}
+                    initialLng={selectedLocation?.lng}
+                    initialLat={selectedLocation?.lat}
+                />
+                <p style={{ marginTop: 12, color: '#666', textAlign: 'center' }}>
+                    👆 点击地图上的任意位置来选择酒店地址
+                </p>
+            </Modal>
 
             <Footer style={{ textAlign: 'center' }}>
             </Footer>

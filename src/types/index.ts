@@ -27,7 +27,7 @@ export interface HotelImage {
 // ==================== 用户相关类型 ====================
 
 /** 用户角色类型 */
-export type UserRole = 'merchant' | 'admin';
+export type UserRole = 'merchant' | 'admin'|'user';
 
 /** 用户状态 */
 export type UserStatus = 'active' | 'inactive';
