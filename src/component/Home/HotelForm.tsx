@@ -17,6 +17,20 @@ declare global {
 const { Option } = Select;
 const { TextArea } = Input;
 
+// 预设酒店设施选项（与后端保持一致）
+const AMENITIES_OPTIONS = [
+    'WiFi', '宽带上网', '停车场', '游泳池', '健身房', '餐厅', '酒吧', '会议室',
+    '商务中心', 'SPA', '按摩', '桑拿', '高尔夫', '网球', '羽毛球', '乒乓球',
+    '台球', '棋牌室', 'KTV', '儿童游乐场', '儿童俱乐部', '托管服务', '宠物友好',
+    '接机服务', '送机服务', '租车服务', '旅游票务', '行李寄存', '24小时前台',
+    '礼宾服务', '货币兑换', '保险箱', '洗衣服务', '干洗服务', '客房服务',
+    '早餐', '午餐', '晚餐', '下午茶', '自助餐', '咖啡厅', '茶楼', '江景', '城景',
+    '花园', '空调', '暖气', '电视', '冰箱', '微波炉', '洗衣机', '吹风机',
+    '拖鞋', '浴袍', '洗漱用品', '浴缸', '淋浴', '阳台', '电梯', '无障碍设施',
+    '吸烟房', '无烟房', '家庭房', '套房', '豪华套房', '总统套房', '行政楼层',
+    '贵宾休息室', '快速入住', '快速退房', '免费停车', '收费停车'
+];
+
 interface HotelFormProps {
     isEdit?: boolean;
     form?: any; // 接受父组件传入的 form 实例
@@ -538,10 +552,15 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
                     <Form.Item
                         name="amenities"
                         label="设施配置"
-                        rules={[{ required: true, message: '请选择设施' }]}
+                        rules={[{ required: true, message: '请选择至少一个设施' }]}
                     >
-                        <Select mode="tags" placeholder="选择或输入设施">
-                            {['WiFi', '游泳池', '健身房', '餐厅', '停车场', 'SPA', '江景', '早餐', '接机服务', '行李寄存', '24小时前台', '空调', '电视', '浴缸', '阳台', '电梯', '会议室', '商务中心', '儿童游乐场', '宠物友好'].map(item => (
+                        <Select 
+                            mode="tags" 
+                            placeholder="选择预设设施或输入自定义设施"
+                            tokenSeparators={[',']}
+                            style={{ width: '100%' }}
+                        >
+                            {AMENITIES_OPTIONS.map(item => (
                                 <Option key={item} value={item}>{item}</Option>
                             ))}
                         </Select>
