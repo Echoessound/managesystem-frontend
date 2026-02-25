@@ -11,6 +11,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import InfoManage from '../../component/Home/InfoManage';
 import EditManage from '../../component/Home/EditManage';
 import InfoEntry from '../../component/Home/InfoEntry';
+import InfoShow from '../../component/Home/InfoShow';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -79,7 +80,7 @@ const Home: React.FC = () => {
             case '1':
                 return <InfoManage />;
             case '2':
-                return <EditManage />;
+                return <InfoShow />;
             case '3':
                 return <InfoEntry />;
             default:

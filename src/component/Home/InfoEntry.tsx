@@ -64,55 +64,31 @@ const InfoEntry: React.FC = () => {
                     count: String(rt.count),
                     images: []
                 };
-                
-                // 处理房型图片（支持多张）
-                if (rt.images && rt.images.length > 0) {
-                    rt.images.forEach((img: any) => {
-                        if (img.originFileObj) {
-                            // 新上传的图片作为文件
-                            rtData.images.push({ type: 'file', data: img.originFileObj });
-                        }
-                    });
-                }
-                
                 return rtData;
             });
             formData.append('roomTypes', JSON.stringify(roomTypesData));
-        }
-        
-        // 单独处理房型图片文件（多张）
-        if (values.roomTypes) {
-            values.roomTypes.forEach((rt: any, index: number) => {
-                if (rt.images && rt.images.length > 0) {
-                    rt.images.forEach((img: any) => {
-                        if (img.originFileObj) {
-                            formData.append(`roomTypeImages[${index}]`, img.originFileObj);
-                        }
-                    });
-                }
-            });
+            
+            // 处理房型图片文件 - 使用 originFileObj
+            if (values.roomTypes) {
+                values.roomTypes.forEach((rt: any) => {
+                    if (rt.images && rt.images.length > 0) {
+                        rt.images.forEach((img: any) => {
+                            if (img.originFileObj) {
+                                formData.append('roomImages', img.originFileObj);
+                            }
+                        });
+                    }
+                });
+            }
         }
 
-        // 图片文件 - 优先使用 Base64 格式，避免重复发送
+        // 图片文件 - 使用 originFileObj
         if (values.images && values.images.length > 0) {
             values.images.forEach((file: any) => {
-                // 只发送一个：优先使用 preview (Base64)，其次使用 originFileObj
-                if (file.preview && file.preview.startsWith('data:')) {
-                    formData.append('images', file.preview);
-                } else if (file.originFileObj) {
+                if (file.originFileObj) {
                     formData.append('images', file.originFileObj);
                 }
             });
-        }
-
-        // 营业执照 - 优先使用 Base64 格式
-        if (values.license && values.license.length > 0) {
-            const licenseFile = values.license[0];
-            if (licenseFile.preview) {
-                formData.append('license', licenseFile.preview);
-            } else if (licenseFile.originFileObj) {
-                formData.append('license', licenseFile.originFileObj);
-            }
         }
 
         console.log('提交数据...');

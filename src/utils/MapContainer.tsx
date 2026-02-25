@@ -10,6 +10,8 @@ interface MapContainerProps {
 
 // 高德 JS API Key（用于地图显示）
 const AMAP_JS_KEY = 'd4a40190ad0e21c36b11246dfa469200';
+// 高德安全密钥
+const AMAP_SECURITY_KEY = '4e63968c245ee015f30675fc39965e57';
 // 高德 Web 服务 API Key（用于逆地理编码）
 const AMAP_REST_KEY = 'ec60beb00a8047166085fd4e9395b0fa';
 
@@ -21,7 +23,8 @@ const loadAMap = () => {
     amapLoadPromise = AMapLoader.load({
       key: AMAP_JS_KEY,
       version: '2.0',
-      plugins: []
+      plugins: [],
+      securityJsCode: AMAP_SECURITY_KEY,
     });
   }
   return amapLoadPromise;
@@ -37,6 +40,7 @@ const MapContainer: FC<MapContainerProps> = ({
   const onAddressSelectRef = useRef(onAddressSelect);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [locating, setLocating] = useState(false);
   const initedRef = useRef(false);
 
   // 更新回调引用
@@ -87,14 +91,23 @@ const MapContainer: FC<MapContainerProps> = ({
           console.log('调用逆地理编码 REST API, 坐标:', lng, lat);
           try {
             const response = await fetch(
-              `https://restapi.amap.com/v3/geocode/regeo?location=${lng},${lat}&key=${AMAP_REST_KEY}`
+              `https://restapi.amap.com/v3/geocode/regeo?location=${lng},${lat}&key=${AMAP_REST_KEY}&extensions=all`
             );
             const data = await response.json();
             console.log('逆地理编码响应:', JSON.stringify(data));
             
             if (data.status === '1' && data.regeocode) {
-              // 使用高德返回的完整格式化地址
-              const address = data.regeocode.formatted_address || '';
+              // 优先使用详细地址组件
+              const addressComponent = data.regeocode.addressComponent;
+              const detailedAddress = data.regeocode.formatted_address;
+              
+              // 尝试构建更详细的地址
+              let address = detailedAddress || '';
+              
+              // 如果需要更详细的街道门牌信息，可以从 regeocode.addressComponent 中提取
+              // 例如：province + city + district + street + number
+              console.log('地址组件:', JSON.stringify(addressComponent));
+
               console.log('解析地址:', address);
 
               if (onAddressSelectRef.current) {
@@ -141,6 +154,77 @@ const MapContainer: FC<MapContainerProps> = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 定位到用户当前位置
+  const handleLocate = useCallback(() => {
+    if (!mapRef.current || locating) return;
+
+    setLocating(true);
+    
+    if (!navigator.geolocation) {
+      console.error('浏览器不支持定位功能');
+      setLocating(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { longitude, latitude } = position.coords;
+        console.log('获取到当前位置:', longitude, latitude);
+
+        try {
+          // 调用逆地理编码获取地址
+          const response = await fetch(
+            `https://restapi.amap.com/v3/geocode/regeo?location=${longitude},${latitude}&key=${AMAP_REST_KEY}&extensions=all`
+          );
+          const data = await response.json();
+          
+          let address = '';
+          if (data.status === '1' && data.regeocode) {
+            address = data.regeocode.formatted_address || '';
+          }
+
+          // 清除之前的标记
+          mapRef.current.clearMap();
+
+          // 添加新标记
+          const AMap = await loadAMap();
+          const marker = new AMap.Marker({
+            position: [longitude, latitude],
+            map: mapRef.current
+          });
+
+          // 移动地图到定位位置
+          mapRef.current.setCenter([longitude, latitude]);
+          mapRef.current.setZoom(16);
+
+          if (onAddressSelectRef.current) {
+            onAddressSelectRef.current(address || `${longitude.toFixed(6)}, ${latitude.toFixed(6)}`, longitude, latitude);
+          }
+        } catch (err) {
+          console.error('定位逆地理编码失败:', err);
+          // 仍然定位到位置
+          mapRef.current.setCenter([longitude, latitude]);
+          mapRef.current.setZoom(16);
+          
+          if (onAddressSelectRef.current) {
+            onAddressSelectRef.current(`${longitude.toFixed(6)}, ${latitude.toFixed(6)}`, longitude, latitude);
+          }
+        }
+        
+        setLocating(false);
+      },
+      (err) => {
+        console.error('定位失败:', err);
+        setLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000
+      }
+    );
+  }, [locating]);
+
   if (error) {
     return (
       <div className="map-error">
@@ -162,6 +246,15 @@ const MapContainer: FC<MapContainerProps> = ({
         ref={mapContainerRef}
         style={{ width: '100%', height: '400px' }}
       />
+      {/* 定位按钮 */}
+      <button
+        className="location-button"
+        onClick={handleLocate}
+        disabled={locating}
+        title="定位到我的位置"
+      >
+        {locating ? '定位中...' : '📍'}
+      </button>
       <p className="map-hint">点击地图选择位置</p>
     </div>
   );

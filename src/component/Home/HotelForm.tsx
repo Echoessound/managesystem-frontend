@@ -166,6 +166,7 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
         try {
             await AMapLoader.load({
                 key: "d4a40190ad0e21c36b11246dfa469200",
+                securityCode: "4e63968c245ee015f30675fc39965e57",
                 version: "2.0",
                 plugins: ['Autocomplete', 'PlaceSearch']
             });
@@ -244,7 +245,7 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
                 
                 try {
                     // 使用高德逆地理编码 API 获取城市
-                    const apiKey = "d4a40190ad0e21c36b11246dfa469200";
+                    const apiKey = "ec60beb00a8047166085fd4e9395b0fa";
                     const location = `${longitude},${latitude}`;
                     const apiUrl = `https://restapi.amap.com/v3/geocode/regeo?location=${location}&key=${apiKey}`;
                     
@@ -636,50 +637,6 @@ export const HotelForm: React.FC<HotelFormProps> = ({ form: externalForm }) => {
                             <div>
                                 <UploadOutlined />
                                 <div style={{ marginTop: 8 }}>上传图片</div>
-                            </div>
-                        </Upload>
-                    </Form.Item>
-                </Card>
-
-                <Card title="营业执照上传" type="inner" style={{ marginBottom: 24 }}>
-                    <Form.Item
-                        name="license"
-                        valuePropName="fileList"
-                        getValueFromEvent={(e: any) => {
-                            if (Array.isArray(e)) return e;
-                            return e?.fileList;
-                        }}
-                        extra="支持 jpg/png 格式，请上传有效的营业执照"
-                        rules={[{ required: true, message: '请上传营业执照' }]}
-                    >
-                        <Upload
-                            listType="picture-card"
-                            name="license"
-                            maxCount={1}
-                            accept="image/*"
-                            beforeUpload={(file) => {
-                                return new Promise((resolve) => {
-                                    const reader = new FileReader();
-                                    reader.onload = (e) => {
-                                        const newFile = Object.assign(file, {
-                                            preview: e.target?.result,
-                                            originFileObj: file,
-                                            url: e.target?.result
-                                        }) as any;
-                                        form.setFieldValue('license', [newFile]);
-                                        resolve(false);
-                                    };
-                                    reader.readAsDataURL(file);
-                                });
-                            }}
-                            onRemove={() => {
-                                form.setFieldValue('license', []);
-                                return true;
-                            }}
-                        >
-                            <div>
-                                <UploadOutlined />
-                                <div style={{ marginTop: 8 }}>上传营业执照</div>
                             </div>
                         </Upload>
                     </Form.Item>

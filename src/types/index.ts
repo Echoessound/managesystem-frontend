@@ -65,24 +65,31 @@ export interface LoginResponse {
 // ==================== 酒店相关类型 ====================
 
 /** 酒店审核状态 */
-export type HotelReviewStatus = 'pending' | 'approved' | 'rejected';
+export type HotelReviewStatus = 'pending' | 'published' | 'rejected' | 'offline';
 
 /** 酒店审核状态中文映射 */
 export const HotelReviewStatusText: Record<HotelReviewStatus, string> = {
     'pending': '待审核',
-    'approved': '审核通过',
-    'rejected': '审核不通过'
+    'published': '已通过',
+    'rejected': '已拒绝',
+    'offline': '已下线'
 };
 
 /** 酒店审核状态颜色映射 */
 export const HotelReviewStatusColor: Record<HotelReviewStatus, string> = {
     'pending': 'orange',
-    'approved': 'green',
-    'rejected': 'red'
+    'published': 'green',
+    'rejected': 'red',
+    'offline': 'default'
+};
+
+/** 酒店是否可以进行上下线操作 */
+export const canTogglePublish = (status: HotelReviewStatus): boolean => {
+    return status === 'published' || status === 'offline';
 };
 
 /** 酒店发布状态 */
-export type HotelPublishStatus = 'published' | 'unpublished';/*发布状态：已发布、未发布*/
+export type HotelPublishStatus = 'published' | 'draft';/*发布状态：已发布、未发布*/
 
 /** 酒店发布状态颜色映射 */
 export const HotelPublishStatusColor: Record<HotelPublishStatus, string> = {
@@ -133,9 +140,6 @@ export interface Hotel {
     contactPhone: string;
     checkInTime: string;
     checkOutTime: string;
-    
-    // 营业执照
-    license: string;
 }
 
 // ==================== 房型相关类型 ====================
@@ -173,9 +177,6 @@ export interface HotelFormData {
     
     // 图片文件（仅前端使用，提交时转换为Base64或文件）
     images: UploadFile[];
-    
-    // 营业执照
-    license: UploadFile[];
 }
 
 /** 房型表单数据（用于录入和编辑） */
@@ -247,7 +248,6 @@ export interface CreateHotelRequest {
     contactPhone?: string;          // 酒店联系电话
     checkInTime?: string;           // 酒店入住时间
     checkOutTime?: string;          // 酒店退房时间
-    license?: string;               // 营业执照（Base64或URL）
 }
 
 /** 创建房型请求 */

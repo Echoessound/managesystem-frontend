@@ -37,6 +37,8 @@ const HotelReview: React.FC = () => {
     }, []);
 
     const handleViewDetail = (hotel: any) => {
+        console.log('查看酒店详情:', hotel);
+        console.log('营业执照:', hotel.license);
         setSelectedHotel(hotel);
         setDetailVisible(true);
     };
@@ -267,7 +269,7 @@ const HotelReview: React.FC = () => {
                             )}
                         </Descriptions.Item>
                         <Descriptions.Item label="图片" span={2}>
-                            {selectedHotel.images && selectedHotel.images.length > 0 ? (
+                            {selectedHotel && selectedHotel.images && selectedHotel.images.length > 0 ? (
                                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                                     {selectedHotel.images.map((img: string, index: number) => (
                                         <img
@@ -280,19 +282,6 @@ const HotelReview: React.FC = () => {
                                 </div>
                             ) : (
                                 '暂无图片'
-                            )}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="营业执照" span={2}>
-                            {selectedHotel.license ? (
-                                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                                    <img
-                                        src={selectedHotel.license.startsWith('http') ? selectedHotel.license : `http://localhost:8080${selectedHotel.license}`}
-                                        alt="营业执照"
-                                        style={{ width: 200, height: 'auto', objectFit: 'contain', borderRadius: 4, border: '1px solid #d9d9d9' }}
-                                    />
-                                </div>
-                            ) : (
-                                '暂无营业执照'
                             )}
                         </Descriptions.Item>
                         <Descriptions.Item label="申请人">{selectedHotel.ownerName}</Descriptions.Item>

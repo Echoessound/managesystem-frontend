@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Table, Button, Tag, message, Popconfirm, Space, Modal } from 'antd';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { HotelReviewStatusText, HotelReviewStatusColor, type HotelPublishStatus} from '../../types';
+import { HotelReviewStatusText, HotelReviewStatusColor, type HotelPublishStatus, canTogglePublish} from '../../types';
 const InfoManage: React.FC = () => {
     const [hotels, setHotels] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -124,7 +124,7 @@ const InfoManage: React.FC = () => {
             key: 'publishStatus',
             dataIndex: 'publishStatus',
             render: (publishStatus: HotelPublishStatus) => {
-                return <Tag color={publishStatus === 'published' ? 'green' : 'orange'}>{publishStatus === 'published' ? '已发布' : '未发布'}</Tag>;
+                return <Tag color={publishStatus === 'published' ? 'green' : 'orange'}>{publishStatus === 'published' ? '已发布' : '草稿'}</Tag>;
             },
             
         },
@@ -137,7 +137,7 @@ const InfoManage: React.FC = () => {
                         编辑
                     </Button>
                     {
-                        (record.status === 'approved') && (
+                        canTogglePublish(record.status) && (
                             record.publishStatus === 'published' ? (
                                 <Popconfirm
                                     title="确定要下线这家酒店吗？"
@@ -154,7 +154,7 @@ const InfoManage: React.FC = () => {
                                                 body: JSON.stringify({ publish: false })
                                             });
                                             const data = await res.json();
-                                            if (data && (data.code === 0 || data.success)) {
+                                            if (data && (data.code === 200 || data.code === 0 || data.success)) {
                                                 // 刷新列表或提示
                                                 if (typeof fetchHotels === 'function') fetchHotels();
                                                 if (typeof message !== 'undefined') message.success('酒店已下架');
@@ -186,7 +186,7 @@ const InfoManage: React.FC = () => {
                                                 body: JSON.stringify({ publish: true })
                                             });
                                             const data = await res.json();
-                                            if (data && (data.code === 0 || data.success)) {
+                                            if (data && (data.code === 200 || data.code === 0 || data.success)) {
                                                 // 刷新列表或提示
                                                 if (typeof fetchHotels === 'function') fetchHotels();
                                                 if (typeof message !== 'undefined') message.success('酒店已发布');
@@ -203,6 +203,13 @@ const InfoManage: React.FC = () => {
                                     <Button type="link" style={{ color: 'green' }}>发布</Button>
                                 </Popconfirm>
                             )
+                        )
+                    }
+                    {
+                        (record.status === 'pending') && (
+                            <Button type="link" disabled style={{ color: '#999' }}>
+                                待审核
+                            </Button>
                         )
                     }
                     {
@@ -236,33 +243,8 @@ const InfoManage: React.FC = () => {
                             </Button>
                         )
                     }
-                    {
-                        (record.status === 'pending') && (
-                            <Button
-                                type="link"
-                                style={{ color: '#faad14' }}
-                            >
-                                待审核
-                            </Button>
-                        )
-                    }
-                    {
-                        (record.status !== 'approved' && record.status !== 'rejected' && record.status !== 'pending') && (
-                            <Button
-                                type="link"
-                                style={{ color: '#faad14' }}
-                                onClick={() => {
-                                    if (typeof message !== 'undefined') {
-                                        message.info('当前酒店需要审核通过后才能发布或下线。');
-                                    } else {
-                                        alert('当前酒店需要审核通过后才能发布或下线。');
-                                    }
-                                }}
-                            >
-                                上线/下线
-                            </Button>
-                        )
-                    }
+                    
+                    
                     <Popconfirm
                         title="确定要删除这家酒店吗？"
                         onConfirm={() => deleteHotel(record._id)}

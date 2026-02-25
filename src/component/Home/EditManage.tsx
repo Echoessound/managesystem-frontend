@@ -43,17 +43,6 @@ const EditManage: React.FC = () => {
                     : [];
                 console.log('[DEBUG] Processed images:', images);
 
-                // 处理营业执照数据
-                const license = hotel.license 
-                    ? [{
-                        uid: '-1',
-                        name: 'license.png',
-                        status: 'done',
-                        url: hotel.license.startsWith('http') ? hotel.license : `http://localhost:8080${hotel.license}`,
-                        originFileObj: undefined
-                      }]
-                    : [];
-
                 // 处理房型图片数据（支持多张）
                 const roomTypes = hotel.roomTypes && hotel.roomTypes.length > 0
                     ? hotel.roomTypes.map((rt: any, index: number) => ({
@@ -79,8 +68,7 @@ const EditManage: React.FC = () => {
                     price: hotel.price,
                     amenities: hotel.amenities,
                     roomTypes: roomTypes,
-                    images: images,
-                    license: license
+                    images: images
                 });
             } else {
                 message.error('获取酒店信息失败');
@@ -178,22 +166,7 @@ const EditManage: React.FC = () => {
             });
         }
 
-        // 处理营业执照
-        if (values.license && values.license.length > 0) {
-            const licenseFile = values.license[0];
-            if (licenseFile.originFileObj) {
-                // 新上传的执照
-                formData.append('license', licenseFile.originFileObj);
-            } else if (licenseFile.url) {
-                // 保留原执照，传递 URL
-                formData.append('license', licenseFile.url.replace('http://localhost:8080', ''));
-            } else if (licenseFile.preview && licenseFile.preview.startsWith('data:')) {
-                // Base64 预览图
-                formData.append('license', licenseFile.preview);
-            }
-        }
-
-        const response = await axios.put(`http://localhost:8080/api/hotel/${id}`, formData, {
+        const response = await axios.put(`http://localhost:8080/api/hotel/update/${id}`, formData, {
             headers: {
                 'Authorization': `Bearer ${token}`
                 // 'Content-Type': 'multipart/form-data' // 移除，让浏览器自动设置

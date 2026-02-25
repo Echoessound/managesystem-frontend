@@ -9,7 +9,7 @@ const HistoryReview: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [selectedHotel, setSelectedHotel] = useState<any>(null);
     const [detailVisible, setDetailVisible] = useState(false);
-    const [filterStatus, setFilterStatus] = useState<string>('all'); // all, approved, rejected
+    const [filterStatus, setFilterStatus] = useState<string>('all'); // all, published, rejected
 
     const fetchHistoryHotels = async () => {
         setLoading(true);
@@ -24,7 +24,7 @@ const HistoryReview: React.FC = () => {
                 const items = response.data.data?.items || [];
                 // 只显示已审核的酒店（排除 pending）
                 const reviewedHotels = items.filter((item: any) =>
-                    item.status === 'approved' || item.status === 'rejected'
+                    item.status === 'published' || item.status === 'rejected'
                 );
                 setHotels(reviewedHotels);
             } else {
@@ -128,8 +128,8 @@ const HistoryReview: React.FC = () => {
                             全部
                         </Button>
                         <Button
-                            type={filterStatus === 'approved' ? 'primary' : 'default'}
-                            onClick={() => setFilterStatus('approved')}
+                            type={filterStatus === 'published' ? 'primary' : 'default'}
+                            onClick={() => setFilterStatus('published')}
                         >
                             已通过
                         </Button>
