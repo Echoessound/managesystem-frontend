@@ -17,6 +17,11 @@ const HistoryReview: React.FC = () => {
             const params: any = { pageSize: 100 };
             if (filterStatus !== 'all') {
                 params.status = filterStatus;
+                params.publishStatus = 'draft,published'; // 显示所有发布状态
+            } else {
+                // 默认显示已审核的酒店（排除待审核的 pending）
+                params.status = 'published,rejected';
+                params.publishStatus = 'draft,published'; // 显示所有发布状态
             }
             const response = await axios.get('http://localhost:8080/api/hotel/list', { params });
 

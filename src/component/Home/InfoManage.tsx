@@ -145,7 +145,7 @@ const InfoManage: React.FC = () => {
                                         // 下线酒店操作
                                         try {
                                             const token = localStorage.getItem('token');
-                                            const res = await fetch(`/api/hotel/publish/${record._id}`, {
+                                            const res = await fetch(`/api/hotel/${record._id}/publish`, {
                                                 method: 'POST',
                                                 headers: {
                                                     'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ const InfoManage: React.FC = () => {
                                         // 发布酒店操作
                                         try {
                                             const token = localStorage.getItem('token');
-                                            const res = await fetch(`/api/hotel/publish/${record._id}`, {
+                                            const res = await fetch(`/api/hotel/${record._id}/publish`, {
                                                 method: 'POST',
                                                 headers: {
                                                     'Content-Type': 'application/json',

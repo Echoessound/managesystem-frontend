@@ -175,11 +175,12 @@ const InfoShow: React.FC = () => {
                                 <Image.PreviewGroup>
                                     <Row gutter={[8, 8]}>
                                         {selectedHotel.images.map((img: string, index: number) => (
-                                            <Col span={6} key={index}>
+                                            <Col xs={12} sm={8} md={6} lg={4} key={index}>
                                                 <Image
                                                     src={img.startsWith('http') ? img : `http://localhost:8080${img}`}
                                                     alt={`酒店图片${index + 1}`}
                                                     style={{ width: '100%', height: 120, objectFit: 'cover', borderRadius: 4 }}
+                                                    fallback="/placeholder.png"
                                                 />
                                             </Col>
                                         ))}
@@ -227,7 +228,7 @@ const InfoShow: React.FC = () => {
                                 <h4>房型信息</h4>
                                 <Row gutter={[16, 16]}>
                                     {selectedHotel.roomTypes.map((room: any, index: number) => (
-                                        <Col span={8} key={index}>
+                                        <Col xs={24} sm={12} md={8} key={index}>
                                             <Card size="small" title={room.name}>
                                                 <p>价格: ¥{room.price}</p>
                                                 <p>容量: {room.capacity}人</p>

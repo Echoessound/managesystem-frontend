@@ -87,6 +87,7 @@ const EditManage: React.FC = () => {
   const onFinish = async (values: any) => {
     if (!id) return;
     setLoading(true);
+    console.log('onFinish 接收到的完整 values:', values); // 调试日志
     try {
         const token = localStorage.getItem('token');
         const formData = new FormData();
@@ -106,7 +107,9 @@ const EditManage: React.FC = () => {
 
         // 房型数据 - 使用 JSON 格式发送，避免 FormData key 冲突
         if (values.roomTypes) {
-            const roomTypesData = values.roomTypes.map((rt: any, index: number) => {
+            console.log('提交时的 roomTypes 数据:', JSON.stringify(values.roomTypes));
+            const roomTypesData = values.roomTypes.map((rt: any) => {
+                console.log('单个房型数据:', rt);
                 const rtData: any = {
                     name: rt.name || '',
                     description: rt.description || '',
@@ -135,14 +138,14 @@ const EditManage: React.FC = () => {
             formData.append('roomTypes', JSON.stringify(roomTypesData));
         }
         
-        // 单独处理房型图片文件（多张）- 使用不同的字段名
+        // 单独处理房型图片文件（多张）- 使用 roomImages 字段名
         if (values.roomTypes) {
-            values.roomTypes.forEach((rt: any, index: number) => {
+            values.roomTypes.forEach((rt: any) => {
                 if (rt.images && rt.images.length > 0) {
-                    rt.images.forEach((img: any, imgIndex: number) => {
+                    rt.images.forEach((img: any) => {
                         if (img.originFileObj) {
                             // 新上传的图片作为文件
-                            formData.append(`roomTypeImages[${index}]`, img.originFileObj);
+                            formData.append('roomImages', img.originFileObj);
                         }
                     });
                 }
@@ -169,9 +172,10 @@ const EditManage: React.FC = () => {
         const response = await axios.put(`http://localhost:8080/api/hotel/update/${id}`, formData, {
             headers: {
                 'Authorization': `Bearer ${token}`
-                // 'Content-Type': 'multipart/form-data' // 移除，让浏览器自动设置
             }
         });
+
+        console.log('更新响应:', response.data);
 
         if (response.data.code === 200) {
             message.success('更新酒店信息成功！');
@@ -182,11 +186,14 @@ const EditManage: React.FC = () => {
 
     } catch (error: any) {
         console.error('更新失败:', error);
-        if (error.response && error.response.data && error.response.data.message) {
-            message.error(error.response.data.message);
-        } else {
-            message.error('更新失败，请重试。');
+        console.error('错误响应:', error.response?.data);
+        let errorMsg = '更新失败，请重试。';
+        if (error.response && error.response.data) {
+            errorMsg = error.response.data.message || '更新失败';
         }
+        // 直接显示错误
+        alert('错误: ' + errorMsg);
+        message.error(errorMsg);
     } finally {
         setLoading(false);
     }

@@ -13,7 +13,21 @@ const Register: React.FC = () => {
     const getCode = async () => {//获得验证码的功能
         console.log('发送验证码请求');
         try {
-            const { email } = await form.validateFields(['email']);
+            // 直接获取 email 字段值并手动验证格式
+            const email = form.getFieldValue('email');
+            
+            if (!email) {
+                message.error('请先输入邮箱');
+                return;
+            }
+            
+            // 简单的邮箱格式验证
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                message.error('请输入正确的邮箱格式');
+                return;
+            }
+            
             console.log(email);//打印邮箱(测试功能，后面可删除)
             axios.post('http://localhost:8080/api/auth/sendCode', { email })//发送验证码的请求
                 .then(res => {
@@ -50,7 +64,7 @@ const Register: React.FC = () => {
         newLoadings[index] = false;
         return newLoadings;
       });
-    }, 6000);//验证码获取超时时间
+    }, 60000);//验证码获取超时时间
   };
 
     const {

@@ -16,7 +16,8 @@ const HotelReview: React.FC = () => {
     const fetchPendingHotels = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('http://localhost:8080/api/hotel/list?status=pending&pageSize=100');
+            // 获取待审核、被拒绝和草稿状态的酒店
+            const response = await axios.get('http://localhost:8080/api/hotel/list?status=pending,rejected&publishStatus=draft,rejected&pageSize=100');
 
             if (response.data.code === 200) {
                 const items = response.data.data?.items || [];
@@ -131,10 +132,15 @@ const HotelReview: React.FC = () => {
             title: '状态',
             dataIndex: 'status',
             key: 'status',
-            render: (status: string) => (
-                <Tag color={HotelReviewStatusColor[status as keyof typeof HotelReviewStatusColor]}>
-                    {HotelReviewStatusText[status as keyof typeof HotelReviewStatusText]}
-                </Tag>
+            render: (status: string, record: any) => (
+                <>
+                    <Tag color={HotelReviewStatusColor[status as keyof typeof HotelReviewStatusColor]}>
+                        {HotelReviewStatusText[status as keyof typeof HotelReviewStatusText]}
+                    </Tag>
+                    {record.publishStatus === 'draft' && (
+                        <Tag color="default">草稿</Tag>
+                    )}
+                </>
             ),
         },
         {
