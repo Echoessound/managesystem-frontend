@@ -134,9 +134,9 @@ const HotelReview: React.FC = () => {
             key: 'status',
             render: (status: string, record: any) => (
                 <>
-                    <Tag color={HotelReviewStatusColor[status as keyof typeof HotelReviewStatusColor]}>
-                        {HotelReviewStatusText[status as keyof typeof HotelReviewStatusText]}
-                    </Tag>
+                <Tag color={HotelReviewStatusColor[status as keyof typeof HotelReviewStatusColor]}>
+                    {HotelReviewStatusText[status as keyof typeof HotelReviewStatusText]}
+                </Tag>
                     {record.publishStatus === 'draft' && (
                         <Tag color="default">草稿</Tag>
                     )}
@@ -188,7 +188,7 @@ const HotelReview: React.FC = () => {
             <Table
                 columns={columns}
                 dataSource={hotels}
-                rowKey="_id"
+                rowKey={(record: any) => record._id || record.id}
                 loading={loading}
                 pagination={{
                     pageSize: 10,

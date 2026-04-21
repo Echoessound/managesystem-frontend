@@ -154,7 +154,7 @@ const HistoryReview: React.FC = () => {
             <Table
                 columns={columns}
                 dataSource={hotels}
-                rowKey="_id"
+                rowKey={(record: any) => record._id || record.id}
                 loading={loading}
                 pagination={{
                     pageSize: 10,

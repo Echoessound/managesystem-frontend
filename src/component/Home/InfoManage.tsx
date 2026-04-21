@@ -133,7 +133,7 @@ const InfoManage: React.FC = () => {
             key: 'action',
             render: (_: any, record: any) => (
                 <Space size="middle">
-                    <Button type="link" onClick={() => navigate(`/edit/${record._id}`)}>
+                    <Button type="link" onClick={() => navigate(`/edit/${record._id || record.id || record.id}`)}>
                         编辑
                     </Button>
                     {
@@ -145,7 +145,7 @@ const InfoManage: React.FC = () => {
                                         // 下线酒店操作
                                         try {
                                             const token = localStorage.getItem('token');
-                                            const res = await fetch(`/api/hotel/${record._id}/publish`, {
+                                            const res = await fetch(`http://localhost:8080/api/hotel/${record._id || record.id}/publish`, {
                                                 method: 'POST',
                                                 headers: {
                                                     'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ const InfoManage: React.FC = () => {
                                         // 发布酒店操作
                                         try {
                                             const token = localStorage.getItem('token');
-                                            const res = await fetch(`/api/hotel/${record._id}/publish`, {
+                                            const res = await fetch(`http://localhost:8080/api/hotel/${record._id || record.id}/publish`, {
                                                 method: 'POST',
                                                 headers: {
                                                     'Content-Type': 'application/json',
@@ -220,7 +220,7 @@ const InfoManage: React.FC = () => {
                                 onClick={async () => {
                                     try {
                                         const token = localStorage.getItem('token');
-                                        const res = await fetch(`/api/hotel/${record._id}/resubmit`, {
+                                        const res = await fetch(`http://localhost:8080/api/hotel/${record._id || record.id}/resubmit`, {
                                             method: 'POST',
                                             headers: {
                                                 'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ const InfoManage: React.FC = () => {
                     
                     <Popconfirm
                         title="确定要删除这家酒店吗？"
-                        onConfirm={() => deleteHotel(record._id)}
+                        onConfirm={() => deleteHotel(record._id || record.id)}
                         okText="确定"
                         cancelText="取消"
                     >
@@ -266,7 +266,7 @@ const InfoManage: React.FC = () => {
             <Table 
                 columns={columns} 
                 dataSource={hotels} 
-                rowKey="_id" 
+                rowKey={(record: any) => record._id || record.id} 
                 loading={loading}
             />
             

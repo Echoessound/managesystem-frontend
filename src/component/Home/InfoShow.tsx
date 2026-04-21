@@ -67,7 +67,7 @@ const InfoShow: React.FC = () => {
     const handleViewDetail = (hotel: any) => {
         setSelectedHotel(hotel);
         setDetailVisible(true);
-        fetchReviews(hotel._id);
+        fetchReviews(hotel._id || hotel.id);
     };
 
     const columns = [
@@ -144,7 +144,7 @@ const InfoShow: React.FC = () => {
             <Table
                 columns={columns}
                 dataSource={hotels}
-                rowKey="_id"
+                rowKey={(record: any) => record._id || record.id}
                 loading={loading}
                 pagination={{
                     pageSize: 10,

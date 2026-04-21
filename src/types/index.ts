@@ -27,10 +27,10 @@ export interface HotelImage {
 // ==================== 用户相关类型 ====================
 
 /** 用户角色类型 */
-export type UserRole = 'merchant' | 'admin'|'user';
+export type UserRole = 'merchant' | 'admin'|'user';//用户角色：商户、管理员、用户
 
 /** 用户状态 */
-export type UserStatus = 'active' | 'inactive';
+export type UserStatus = 'active' | 'inactive';//用户状态：活跃、不活跃
 
 /** 用户基础信息 */
 export interface User {
